@@ -12,9 +12,9 @@ const QuranLayout = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  const handleSurahChange = (surah) => {
+  const handleSurahChange = async (surah) => {
     setSelectedItem(surah);
-    fetch(
+    await fetch(
       `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedItem?.chapter}.json`
     )
       .then((response) => response.json())
@@ -32,7 +32,7 @@ const QuranLayout = () => {
       `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedObj?.chapter}.json`
     )
       .then((response) => response.json())
-      .then((data) => setEachSurah(data))
+      .then((data) => setEachSurah(data?.chapter))
       .catch((error) => console.error("Error fetching data:", error));
   };
 
@@ -76,16 +76,13 @@ const QuranLayout = () => {
         <h1 className="text-2xl font-bold mb-4 text-center">
           {selectedItem.name}
         </h1>
-
+        <br />
         <div className="border-red-300">
-          {eachsurah?.map((verse, index) => {
-            {
-              /* console.log("Okey"); */
-            }
-            <p key={index + 1} className="flex justify-center">
-              Okey
-            </p>;
-          })}
+          {eachsurah?.map((verse, index) => (
+            <p key={index + 1} className="text-4xl text-right">
+              {verse.text}
+            </p>
+          ))}
         </div>
       </div>
     </div>
