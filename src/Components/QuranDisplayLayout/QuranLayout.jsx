@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import LeftNavigation from "./LeftNavigation/LeftNavigation";
-import MainScreen from "./MainScreen/MainScreen";
 
 const QuranLayout = () => {
   const [selectedItem, setSelectedItem] = useState({});
   const [surahs, setSurahs] = useState([]);
+  const [eachsurah, setEachSurah] = useState([]);
 
   useEffect(() => {
     fetch("../../../public/SurahData.json")
@@ -13,13 +12,29 @@ const QuranLayout = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  const handleChange = (event) => {
+  const handleSurahChange = (surah) => {
+    setSelectedItem(surah);
+    fetch(
+      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedItem?.chapter}.json`
+    )
+      .then((response) => response.json())
+      .then((data) => setEachSurah(data?.chapter))
+      .catch((error) => console.error("Error fetching data:", error));
+    console.log("Each Surah ", eachsurah);
+  };
+
+  const handleSectionChange = (event) => {
     const selectedValue = event.target.value;
     const selectedObj = surahs.find((option) => option.name === selectedValue);
     setSelectedItem(selectedObj);
-  };
 
-  console.log(selectedItem);
+    fetch(
+      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedObj?.chapter}.json`
+    )
+      .then((response) => response.json())
+      .then((data) => setEachSurah(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  };
 
   return (
     <div className="flex h-screen mt-4">
@@ -34,7 +49,7 @@ const QuranLayout = () => {
                   ? "bg-blue-500 text-white"
                   : "bg-gray-300 hover:bg-gray-400"
               }`}
-              onClick={() => setSelectedItem(surah)}
+              onClick={() => handleSurahChange(surah)}
             >
               {surah.name}
             </li>
@@ -47,7 +62,7 @@ const QuranLayout = () => {
         <div>
           <select
             className="select select-primary w-full lg:hidden"
-            onChange={handleChange}
+            onChange={handleSectionChange}
           >
             {surahs.map((surah, index) => (
               <option key={index}>{surah.name}</option>
@@ -62,7 +77,16 @@ const QuranLayout = () => {
           {selectedItem.name}
         </h1>
 
-        <p className="border-2 border-blue-500 rounded-md p-10"></p>
+        <div className="border-red-300">
+          {eachsurah?.map((verse, index) => {
+            {
+              /* console.log("Okey"); */
+            }
+            <p key={index + 1} className="flex justify-center">
+              Okey
+            </p>;
+          })}
+        </div>
       </div>
     </div>
   );
