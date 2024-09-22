@@ -6,9 +6,12 @@ import {
   useGetSurahBengaliByChapterQuery,
   useGetSurahByChapterQuery,
 } from "../../redux/api/quranApi";
+
 const QuranLayout = () => {
-  const [selectedItem, setSelectedItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState(1);
   const [surahs, setSurahs] = useState([]);
+
+  const { data: quranData, isLoading } = useGetAllQuranVerseQuery(selectedItem);
 
   // Fetch the Arabic and Bengali Surah dynamically using Redux
   const { data: eachsurah, isLoading: isLoadingArabic } =
@@ -19,14 +22,6 @@ const QuranLayout = () => {
     useGetSurahBengaliByChapterQuery(selectedItem?.chapter, {
       skip: !selectedItem?.chapter,
     });
-
-const QuranLayout = () => {
-  const [selectedItem, setSelectedItem] = useState(1);
-  const [surahs, setSurahs] = useState([]);
-  const [eachsurah, setEachSurah] = useState([]);
-
-  const { data: quranData, isLoading } = useGetAllQuranVerseQuery(selectedItem);
-
   useEffect(() => {
     fetch("../../../public/SurahData.json")
       .then((response) => response.json())
@@ -34,10 +29,9 @@ const QuranLayout = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-
   const handleSurahChange = (surah) => {
     setSelectedItem(surah);
-
+  };
   const handleSectionChange = (event) => {
     const selectedValue = event.target.value;
     const selectedObj = surahs.find((option) => option.name === selectedValue);
