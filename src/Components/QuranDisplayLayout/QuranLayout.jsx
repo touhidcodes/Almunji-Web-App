@@ -6,8 +6,10 @@ import {
 } from "../../redux/api/quranApi";
 
 const QuranLayout = () => {
-  const [selectedItem, setSelectedItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState(1);
   const [surahs, setSurahs] = useState([]);
+
+  const { data: quranData, isLoading } = useGetAllQuranVerseQuery(selectedItem);
 
   // Fetch the Arabic and Bengali Surah dynamically using Redux
   const { data: eachsurah, isLoading: isLoadingArabic } =
