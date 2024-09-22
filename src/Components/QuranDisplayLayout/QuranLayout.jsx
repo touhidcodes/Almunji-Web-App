@@ -1,7 +1,25 @@
 import { useEffect, useState } from "react";
 import "../../../src/index.css";
-import { useGetAllQuranVerseQuery } from "../../redux/api/quranApi";
-import { data } from "autoprefixer";
+
+import {
+  useGetAllQuranVerseQuery,
+  useGetSurahBengaliByChapterQuery,
+  useGetSurahByChapterQuery,
+} from "../../redux/api/quranApi";
+const QuranLayout = () => {
+  const [selectedItem, setSelectedItem] = useState({});
+  const [surahs, setSurahs] = useState([]);
+
+  // Fetch the Arabic and Bengali Surah dynamically using Redux
+  const { data: eachsurah, isLoading: isLoadingArabic } =
+    useGetSurahByChapterQuery(selectedItem?.chapter, {
+      skip: !selectedItem?.chapter,
+    });
+  const { data: eachsurahBengali, isLoading: isLoadingBengali } =
+    useGetSurahBengaliByChapterQuery(selectedItem?.chapter, {
+      skip: !selectedItem?.chapter,
+    });
+
 const QuranLayout = () => {
   const [selectedItem, setSelectedItem] = useState(1);
   const [surahs, setSurahs] = useState([]);
@@ -9,48 +27,31 @@ const QuranLayout = () => {
 
   const { data: quranData, isLoading } = useGetAllQuranVerseQuery(selectedItem);
 
-  console.log("Data", selectedItem, quranData);
-
   useEffect(() => {
     fetch("../../../public/SurahData.json")
       .then((response) => response.json())
       .then((data) => setSurahs(data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
-  const handleSurahChange = async (surah) => {
-    // console.log(surah?.chapter);
-    setSelectedItem(surah?.chapter);
-    // await fetch(
-    //   `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedItem?.chapter}.json`
-    // )
-    //   .then((response) => response.json())
-    //   .then((data) => setEachSurah(data?.chapter))
-    //   .catch((error) => console.error("Error fetching data:", error));
-    // console.log("Each Surah ", eachsurah);
-  };
+
+
+  const handleSurahChange = (surah) => {
+    setSelectedItem(surah);
 
   const handleSectionChange = (event) => {
     const selectedValue = event.target.value;
     const selectedObj = surahs.find((option) => option.name === selectedValue);
     setSelectedItem(selectedObj);
-
-    fetch(
-      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedObj?.chapter}.json`
-    )
-      .then((response) => response.json())
-      .then((data) => setEachSurah(data?.chapter))
-      .catch((error) => console.error("Error fetching data:", error));
   };
 
-  if (isLoading) {
-    console.log("Loading...");
+  if (isLoadingArabic || isLoadingBengali) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="flex w-full h-screen mt-2">
       {/* Left Navigation */}
-      <div className="w-64  bg-gray-200 p-4 overflow-y-scroll  scrollbar scrollbar-thumb-indigo-600 scrollbar-track-slate-300    h-full hidden md:block lg:block">
+      <div className="w-64  bg-gray-200 p-4 overflow-y-scroll  scrollbar scrollbar-thumb-indigo-600 scrollbar-track-slate-300 h-full hidden md:block lg:block">
         <ul className="">
           {surahs.map((surah, index) => (
             <li
@@ -68,7 +69,7 @@ const QuranLayout = () => {
         </ul>
       </div>
 
-      {/* Main Content (Full Width After Left Nav) */}
+      {/* Main Content */}
       <div className="w-full p-6 h-full overflow-y-auto">
         <div>
           <select
@@ -89,13 +90,22 @@ const QuranLayout = () => {
         </h1>
         <br />
         <div className="border-red-300">
-          {eachsurah?.map((verse, index) => (
-            <p
-              key={index + 1}
-              className="text-4xl text-right bg-gray-100 mb-4 p-4 rounded-lg"
-            >
-              <span className="amiri-font text-gray-900">{verse.text}</span>
-            </p>
+          {eachsurah?.chapter?.map((verse, index) => (
+            <div key={index} className="mb-6">
+              {/* Arabic Verse */}
+              <p className="text-4xl text-right bg-gray-100 mb-2 p-4 rounded-lg">
+                <span className="amiri-font text-gray-900">{verse.text}</span>
+              </p>
+
+              {/* Bengali Verse (Translation) */}
+              {eachsurahBengali?.chapter && (
+                <p className="text-3xl text-left bg-gray-50 mb-2 p-4 rounded-lg">
+                  <span className=" text-gray-700">
+                    {eachsurahBengali.chapter[index]?.text}
+                  </span>
+                </p>
+              )}
+            </div>
           ))}
         </div>
       </div>
