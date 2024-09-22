@@ -19,7 +19,7 @@ export const quranApi = baseQuranApi.injectEndpoints({
     }),
     getSurahBengaliByChapter: build.query({
       query: (chapter) => ({
-        url: `/ben-abubakrzakaria/${chapter}.json`,
+        url: `/ben-muhiuddinkhan/${chapter}.json`,
         method: "GET",
       }),
       providesTags: [tagTypes.quran],
