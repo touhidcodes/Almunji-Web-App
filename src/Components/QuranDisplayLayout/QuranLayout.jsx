@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../../../src/index.css";
+
 import {
   useGetSurahBengaliByChapterQuery,
   useGetSurahByChapterQuery,
@@ -19,6 +20,13 @@ const QuranLayout = () => {
       skip: !selectedItem?.chapter,
     });
 
+const QuranLayout = () => {
+  const [selectedItem, setSelectedItem] = useState(1);
+  const [surahs, setSurahs] = useState([]);
+  const [eachsurah, setEachSurah] = useState([]);
+
+  const { data: quranData, isLoading } = useGetAllQuranVerseQuery(selectedItem);
+
   useEffect(() => {
     fetch("../../../public/SurahData.json")
       .then((response) => response.json())
@@ -31,9 +39,9 @@ const QuranLayout = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
+
   const handleSurahChange = (surah) => {
     setSelectedItem(surah);
-  };
 
   const handleSectionChange = (event) => {
     const selectedValue = event.target.value;
