@@ -1,8 +1,10 @@
-import { authKey } from "@/constants/authKey";
-import { getNewAccessToken } from "@/services/auth.services";
 import axios from "axios";
 import setAccessToken from "../../utils/setAccessToken";
-import { setToLocalStorage } from "../../utils/localStorge";
+import {
+  getFromLocalStorage,
+  setToLocalStorage,
+} from "../../utils/localStorage";
+import { getNewAccessToken } from "../../utils/getNewAccessToken";
 
 const instance = axios.create();
 instance.defaults.headers.post["Content-Type"] = "application/json";
@@ -12,16 +14,13 @@ instance.defaults.timeout = 60000;
 // Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
-    // Do something before request is sent
-    const accessToken = getFromLocalStorage(authKey);
-
+    const accessToken = getFromLocalStorage("accessToken");
     if (accessToken) {
       config.headers.Authorization = accessToken;
     }
     return config;
   },
   function (error) {
-    // Do something with request error
     return Promise.reject(error);
   }
 );
@@ -29,34 +28,34 @@ instance.interceptors.request.use(
 // Add a response interceptor
 instance.interceptors.response.use(
   function (response) {
-    // Any status code that lie within the range of 2xx cause this function to trigger
-    // Do something with response data
-    const responseObject = {
-      data: response?.data?.data,
-      meta: response?.data?.meta,
+    // Return only data and meta if needed
+    console.log(response);
+    return {
+      data: response.data,
+      meta: response.data.meta,
     };
-    return responseObject;
   },
   async function (error) {
-    // Any status codes that falls outside the range of 2xx cause this function to trigger
-    // Do something with response error
     console.log(error);
     const config = error.config;
+
+    // Handle 500 errors and token refreshing
     if (error?.response?.status === 500 && !config.sent) {
       config.sent = true;
-      const response = await getNewAccessToken();
-      const accessToken = response?.data?.accessToken;
-      config.headers["Authorization"] = accessToken;
-      setToLocalStorage(authKey, accessToken);
-      setAccessToken(accessToken);
+      // Call your function to get a new access token here
+      const newAccessToken = await getNewAccessToken(); // Define this function
+      config.headers["Authorization"] = newAccessToken;
+      setToLocalStorage("accessToken", newAccessToken);
+      setAccessToken(newAccessToken);
       return instance(config);
     } else {
       const responseObject = {
-        statusCode: error?.response?.data?.statusCode,
-        message: error?.response?.data?.message,
-        errorMessages: error?.response?.data?.message,
+        statusCode:
+          error?.response?.data?.statusCode || error?.response?.status,
+        message: error?.response?.data?.message || "An error occurred",
+        errorMessages: error?.response?.data?.message || error.message,
       };
-      return responseObject;
+      return Promise.reject(responseObject); // Reject with detailed error object
     }
   }
 );
