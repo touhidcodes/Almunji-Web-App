@@ -10,7 +10,25 @@ export const quranApi = baseQuranApi.injectEndpoints({
       }),
       providesTags: [tagTypes.quran],
     }),
+    getSurahByChapter: build.query({
+      query: (chapter) => ({
+        url: `/ara-qurandoorinonun/${chapter}.json`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.quran],
+    }),
+    getSurahBengaliByChapter: build.query({
+      query: (chapter) => ({
+        url: `/ben-abubakrzakaria/${chapter}.json`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.quran],
+    }),
   }),
 });
 
-export const { useGetAllQuranVerseQuery } = quranApi;
+export const {
+  useGetAllQuranVerseQuery,
+  useGetSurahByChapterQuery,
+  useGetSurahBengaliByChapterQuery,
+} = quranApi;
