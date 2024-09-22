@@ -33,8 +33,6 @@ const AuthProvider = ({ children }) => {
     // Call the async function
     fetchData();
   }, []);
-
-  console.log(wholeQuran);
   const dataInfo = {
     wholeQuran,
   };

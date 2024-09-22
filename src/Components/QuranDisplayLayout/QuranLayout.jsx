@@ -1,40 +1,32 @@
 import { useEffect, useState } from "react";
 import "../../../src/index.css";
 import { useGetAllQuranVerseQuery } from "../../redux/api/quranApi";
+import { data } from "autoprefixer";
 const QuranLayout = () => {
-  const { data: quranData, isLoading } = useGetAllQuranVerseQuery();
-
-  console.log("data", quranData);
-  const [selectedItem, setSelectedItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState(1);
   const [surahs, setSurahs] = useState([]);
-  const [surahsBengali, setSurahsBengali] = useState([]);
   const [eachsurah, setEachSurah] = useState([]);
-  const [eachsurahBengali, setEachSurahBengali] = useState([]);
+
+  const { data: quranData, isLoading } = useGetAllQuranVerseQuery(selectedItem);
+
+  console.log("Data", selectedItem, quranData);
+
   useEffect(() => {
     fetch("../../../public/SurahData.json")
       .then((response) => response.json())
       .then((data) => setSurahs(data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
-
   const handleSurahChange = async (surah) => {
-    console.log(surah);
-    setSelectedItem(surah);
-    await fetch(
-      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedItem?.chapter}.json`
-    )
-      .then((response) => response.json())
-      .then((data) => setEachSurah(data?.chapter))
-      .catch((error) => console.error("Error fetching data:", error));
-    console.log("Each Surah ", eachsurah);
-
-    await fetch(
-      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ben-abubakrzakaria/${selectedItem?.chapter}.json`
-    )
-      .then((response) => response.json())
-      .then((data) => setEachSurahBengali(data?.chapter))
-      .catch((error) => console.error("Error fetching data:", error));
-    console.log("Each Surah ", eachsurahBengali);
+    // console.log(surah?.chapter);
+    setSelectedItem(surah?.chapter);
+    // await fetch(
+    //   `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-qurandoorinonun/${selectedItem?.chapter}.json`
+    // )
+    //   .then((response) => response.json())
+    //   .then((data) => setEachSurah(data?.chapter))
+    //   .catch((error) => console.error("Error fetching data:", error));
+    // console.log("Each Surah ", eachsurah);
   };
 
   const handleSectionChange = (event) => {
