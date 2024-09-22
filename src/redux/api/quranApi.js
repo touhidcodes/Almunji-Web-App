@@ -1,11 +1,11 @@
 import { tagTypes } from "../tags";
-import { baseApi } from "./baseApi";
+import { baseQuranApi } from "./baseApi";
 
-export const quranApi = baseApi.injectEndpoints({
+export const quranApi = baseQuranApi.injectEndpoints({
   endpoints: (build) => ({
     getAllQuranVerse: build.query({
       query: () => ({
-        url: "/",
+        url: "/ara-qurandoorinonun.json",
         method: "GET",
       }),
       providesTags: [tagTypes.quran],

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import "../../../src/index.css";
+import { useGetAllQuranVerseQuery } from "../../redux/api/quranApi";
 const QuranLayout = () => {
+  const { data: quranData, isLoading } = useGetAllQuranVerseQuery();
+
+  console.log("data", quranData);
   const [selectedItem, setSelectedItem] = useState({});
   const [surahs, setSurahs] = useState([]);
   const [surahsBengali, setSurahsBengali] = useState([]);
@@ -45,6 +49,11 @@ const QuranLayout = () => {
       .then((data) => setEachSurah(data?.chapter))
       .catch((error) => console.error("Error fetching data:", error));
   };
+
+  if (isLoading) {
+    console.log("Loading...");
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex w-full h-screen mt-2">
