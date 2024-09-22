@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import "../../../src/index.css";
-
 import {
-  useGetAllQuranVerseQuery,
   useGetSurahBengaliByChapterQuery,
   useGetSurahByChapterQuery,
 } from "../../redux/api/quranApi";
@@ -22,16 +20,23 @@ const QuranLayout = () => {
     useGetSurahBengaliByChapterQuery(selectedItem?.chapter, {
       skip: !selectedItem?.chapter,
     });
+
   useEffect(() => {
     fetch("../../../public/SurahData.json")
       .then((response) => response.json())
-      .then((data) => setSurahs(data))
+      .then((data) => {
+        setSurahs(data);
+        if (data.length > 0) {
+          setSelectedItem(data[0]);
+        }
+      })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
   const handleSurahChange = (surah) => {
     setSelectedItem(surah);
   };
+
   const handleSectionChange = (event) => {
     const selectedValue = event.target.value;
     const selectedObj = surahs.find((option) => option.name === selectedValue);
@@ -47,7 +52,7 @@ const QuranLayout = () => {
       {/* Left Navigation */}
       <div className="w-64  bg-gray-200 p-4 overflow-y-scroll  scrollbar scrollbar-thumb-indigo-600 scrollbar-track-slate-300 h-full hidden md:block lg:block">
         <ul className="">
-          {surahs.map((surah, index) => (
+          {surahs?.map((surah, index) => (
             <li
               key={index}
               className={`p-2 mb-2  rounded-lg ${
@@ -70,17 +75,17 @@ const QuranLayout = () => {
             className="select select-primary w-full lg:hidden"
             onChange={handleSectionChange}
           >
-            {surahs.map((surah, index) => (
+            {surahs?.map((surah, index) => (
               <option key={index}>{surah.name}</option>
             ))}
           </select>
         </div>
 
         <h1 className="amiri-font text-gray-900 text-4xl  mb-4 text-center mt-3">
-          {selectedItem.arabicname}
+          {selectedItem?.arabicname}
         </h1>
         <h1 className="amiri-font text-gray-900 text-2xl font-bold mb-4 text-center">
-          {selectedItem.name}
+          {selectedItem?.name}
         </h1>
         <br />
         <div className="border-red-300">
@@ -95,7 +100,7 @@ const QuranLayout = () => {
               {eachsurahBengali?.chapter && (
                 <p className="text-3xl text-left bg-gray-50 mb-2 p-4 rounded-lg">
                   <span className=" text-gray-700">
-                    {eachsurahBengali.chapter[index]?.text}
+                    {eachsurahBengali?.chapter[index]?.text}
                   </span>
                 </p>
               )}
