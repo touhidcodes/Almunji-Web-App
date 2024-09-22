@@ -25,7 +25,12 @@ const QuranLayout = () => {
   useEffect(() => {
     fetch("../../../public/SurahData.json")
       .then((response) => response.json())
-      .then((data) => setSurahs(data))
+      .then((data) => {
+        setSurahs(data);
+        if (data.length > 0) {
+          setSelectedItem(data[0]);
+        }
+      })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
