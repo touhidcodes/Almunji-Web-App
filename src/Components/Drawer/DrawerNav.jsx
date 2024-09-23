@@ -62,7 +62,7 @@ const DrawerNav = () => {
         open={isOpen}
         onClose={toggleDrawer}
         direction="left"
-        className="bla bla bla"
+        className="z-10"
       >
         <div>
           <ul>{navlinkDrawer}</ul>

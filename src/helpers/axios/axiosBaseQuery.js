@@ -15,11 +15,11 @@ export const axiosBaseQuery =
     };
 
     try {
-      console.log(url, "url");
+      // console.log(url, "url");
       const result = await axiosInstance(config);
       return { data: result.data };
     } catch (error) {
-      console.log(error, "as err");
+      // console.log(error, "as err");
       return {
         error: {
           status: error.response?.status,

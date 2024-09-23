@@ -29,14 +29,14 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   function (response) {
     // Return only data and meta if needed
-    console.log(response);
+    // console.log(response);
     return {
       data: response.data,
       meta: response.data.meta,
     };
   },
   async function (error) {
-    console.log(error);
+    // console.log(error);
     const config = error.config;
 
     // Handle 500 errors and token refreshing

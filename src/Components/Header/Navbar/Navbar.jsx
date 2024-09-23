@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import DrawerNav from "../../Drawer/DrawerNav";
+import "../../../index.css";
 const Navbar = () => {
   const navlinks = (
     <>
@@ -24,7 +25,7 @@ const Navbar = () => {
           <summary className="no-underline text-lg mx-0  mr-3">
             Category
           </summary>
-          <ul className="bg-base-100 rounded-t-none p-2 text-black">
+          <ul className="bg-[#fffaed] rounded-t-none p-2 text-[#0b8371]">
             <li>
               <Link>Dowa</Link>
             </li>
@@ -38,7 +39,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="navbar shadow-sm shadow-gray-400 bg-white">
+    <div className="navbar navdesign text-[#0b8371] roboto-font">
       <div className="flex">
         <DrawerNav></DrawerNav>
       </div>

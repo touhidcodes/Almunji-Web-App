@@ -6,6 +6,8 @@ const AuthProvider = ({ children }) => {
   const [wholeQuran, setWholeQuran] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedItem, setSelectedItem] = useState({});
+
   useEffect(() => {
     // Define the async function to fetch data
     const fetchData = async () => {
@@ -35,6 +37,8 @@ const AuthProvider = ({ children }) => {
   }, []);
   const dataInfo = {
     wholeQuran,
+    selectedItem,
+    setSelectedItem,
   };
   return (
     <AuthContext.Provider value={dataInfo}>{children}</AuthContext.Provider>
