@@ -5,7 +5,7 @@ import Home from "../Pages/Home/Home/Home";
 import Library from "../Pages/Library/Library/Library";
 import Dictionary from "../Pages/Dictionary/Dictionary/Dictionary";
 import Category from "../Pages/Category/Category/Category";
-
+import BooksReader from "../Components/Library Components/BooksReader/BooksReader";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -26,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: "/category",
         element: <Category></Category>,
+      },
+      {
+        path: "/bookreader",
+        element: <BooksReader></BooksReader>,
       },
     ],
   },

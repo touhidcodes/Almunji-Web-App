@@ -1,10 +1,12 @@
 import React from "react";
-import Books from "../Books/Books";
+import BooksReader from "../../../Components/Library Components/BooksReader/BooksReader";
+import BookList from "../../../Components/Library Components/BookList/BookList";
+
 const Library = () => {
   return (
     <div>
-      <Books></Books>
-      <h1>Library</h1>
+      <BookList></BookList>
+      {/* <BooksReader></BooksReader> */}
     </div>
   );
 };
