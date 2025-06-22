@@ -9,23 +9,23 @@ import Category from "../Pages/Category/Category/Category";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Main></Main>,
+    element: <Main />,
     children: [
       {
         path: "/",
-        element: <Home></Home>,
+        element: <Home />,
       },
       {
         path: "/library",
-        element: <Library></Library>,
+        element: <Library />,
       },
       {
         path: "/dictionary",
-        element: <Dictionary></Dictionary>,
+        element: <Dictionary />,
       },
       {
         path: "/category",
-        element: <Category></Category>,
+        element: <Category />,
       },
     ],
   },
