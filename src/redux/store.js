@@ -6,6 +6,6 @@ export const store = configureStore({
   reducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
-      .concat(baseApi.middleware) // Add first API middleware
-      .concat(baseQuranApi.middleware), // Add Quran API middleware
+      .concat(baseApi.middleware)
+      .concat(baseQuranApi.middleware),
 });
