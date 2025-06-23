@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "M Saffar Creation",
-  description: "M Saffar Creation Portfolio",
+  title: "Almunji",
+  description: "Almunji Web App",
 };
 
 export default function RootLayout({
