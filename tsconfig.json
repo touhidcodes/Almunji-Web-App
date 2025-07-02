@@ -28,7 +28,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/utils/getNewAccessToken.js"
+    "src/utils/getNewAccessToken.ts"
   ],
   "exclude": ["node_modules"]
 }
