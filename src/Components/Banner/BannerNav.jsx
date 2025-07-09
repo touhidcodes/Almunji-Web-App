@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "../Header/Navbar/Navbar";
+import Navbar from "../shared/Header/Navbar/Navbar";
 import SearchBar from "../SearchBar/SearchBar/SearchBar";
 
 const BannerNav = () => {

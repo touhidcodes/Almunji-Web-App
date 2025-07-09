@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import DrawerNav from "../../Drawer/DrawerNav";
+import DrawerNav from "../../../Drawer/DrawerNav";
 const Navbar = () => {
   const navlinks = (
     <>
