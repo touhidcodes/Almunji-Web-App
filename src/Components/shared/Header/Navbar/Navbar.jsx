@@ -1,21 +1,19 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import DrawerNav from "../../../Custom/Drawer/DrawerNav";
+import DrawerNav from "../../../Cushrefm/Drawer/DrawerNav";
 const Navbar = () => {
   const navlinks = (
     <>
       <li>
-        <Link className="no-underline text-lg mx-0  mr-3" to={"/"}>
+        <Link className="no-underline text-lg mx-0  mr-3" href="/">
           Home
         </Link>
       </li>
       <li>
-        <Link className="no-underline text-lg mx-0  mr-3" to={"/library"}>
+        <Link className="no-underline text-lg mx-0  mr-3" href="/library">
           Library
         </Link>
       </li>
       <li>
-        <Link className="no-underline text-lg mx-0  mr-3" to={"/dictionary"}>
+        <Link className="no-underline text-lg mx-0  mr-3" href="/dictionary">
           Dictionary
         </Link>
       </li>
