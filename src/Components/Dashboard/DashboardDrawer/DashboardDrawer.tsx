@@ -9,7 +9,6 @@ import {
   useGetUserWithProfileQuery,
 } from "@/redux/api/userApi";
 import SideBar from "../SideBar/SideBar";
-import AuthButton from "@/components/Custom/AuthButton.tsx/AuthButton";
 import clsx from "clsx";
 
 const drawerWidth = 300;
