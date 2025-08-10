@@ -5,11 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldValues } from "react-hook-form";
 import FormContainer from "@/components/Forms/FormContainer";
 import FormInput from "@/components/Forms/FormInput";
-import FormSelect from "@/components/Forms/FormSelect";
 import Link from "next/link";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 
@@ -67,47 +66,14 @@ const toast = {
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
-  role: z.enum(["USER", "AGENT"], {
-    required_error: "Please select an account type",
-  }),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-interface RegisterPageProps {
-  isLogin?: boolean;
-  setIsLogin?: (value: boolean) => void;
-  toggle?: () => void;
-}
-
-const RegisterPage = ({
-  isLogin = false,
-  setIsLogin = () => {},
-  toggle = () => {},
-}: RegisterPageProps) => {
+const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
   const [error, setError] = useState("");
-  const [api, setApi] = useState<any>(null); // Replace with proper type
+
   const router = useRouter();
-
-  useEffect(() => {
-    if (!api) return;
-
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap());
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
-
-  const toggleForm = () => {
-    const newType = !isLogin ? "login" : "register";
-    router.replace(`/auth?type=${newType}`);
-    setIsLogin(!isLogin);
-    setError("");
-  };
 
   const handleLogin = async (values: FieldValues) => {
     try {
@@ -153,11 +119,6 @@ const RegisterPage = ({
     }
   };
 
-  const roleOptions = [
-    { label: "User", value: "USER" },
-    { label: "Agent", value: "AGENT" },
-  ];
-
   return (
     <div className="w-full max-w-sm space-y-5">
       <div className="text-left">
@@ -167,7 +128,7 @@ const RegisterPage = ({
           <span>Create your account</span>
         </h2>
         <p className="text-sm text-gray-500 mt-2">
-          Register to enjoy all features of Almunji Living Solutions
+          Register to enjoy all features of Almunji
         </p>
       </div>
 
@@ -190,13 +151,6 @@ const RegisterPage = ({
         <div className="space-y-4">
           <FormInput name="username" label="Username" type="text" required />
           <FormInput name="email" label="Email Address" type="email" required />
-          <FormSelect
-            label="Register As"
-            name="role"
-            placeholder="Select account type"
-            options={roleOptions}
-            required
-          />
           <FormInput
             name="password"
             label="Password"
@@ -281,7 +235,6 @@ const RegisterPage = ({
         Already have an account?{" "}
         <button
           type="button"
-          onClick={toggle}
           className="text-slate-800 underline cursor-pointer font-semibold"
         >
           Sign In
