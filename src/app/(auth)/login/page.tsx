@@ -6,11 +6,11 @@ import { FieldValues } from "react-hook-form";
 import FormContainer from "@/components/Forms/FormContainer";
 import FormInput from "@/components/Forms/FormInput";
 import Link from "next/link";
-import { z } from "zod";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
+import { loginValidationSchema } from "@/schema/authSchema";
 
 // Mock functions - replace with your actual API calls
 const userLogin = async (values: FieldValues) => {
@@ -61,12 +61,6 @@ const toast = {
     console.log("Error:", message);
   },
 };
-
-// Validation schema
-const schema = z.object({
-  identifier: z.string().min(1, "Email or username is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
 
 interface LoginPageProps {
   isLogin?: boolean;
@@ -188,7 +182,7 @@ const LoginPage = ({
 
       <FormContainer
         onSubmit={handleLogin}
-        resolver={zodResolver(schema)}
+        resolver={zodResolver(loginValidationSchema)}
         defaultValues={{ identifier: "", password: "" }}
       >
         <div className="space-y-4">

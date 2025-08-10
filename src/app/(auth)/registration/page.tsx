@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
+import { registerValidationSchema } from "@/schema/authSchema";
 
 // Mock functions - replace with your actual API calls
 const userLogin = async (values: FieldValues) => {
@@ -61,13 +62,6 @@ const toast = {
     console.log("Error:", message);
   },
 };
-
-// Validation schema for registration
-const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
@@ -140,7 +134,7 @@ const RegisterPage = () => {
 
       <FormContainer
         onSubmit={handleRegister}
-        resolver={zodResolver(registerSchema)}
+        resolver={zodResolver(registerValidationSchema)}
         defaultValues={{
           username: "",
           email: "",
