@@ -13,56 +13,6 @@ import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { registerValidationSchema } from "@/schema/authSchema";
 
-// Mock functions - replace with your actual API calls
-const userLogin = async (values: FieldValues) => {
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (values.identifier && values.password) {
-        resolve({
-          data: { token: "mock-token" },
-          message: "Login successful",
-        });
-      } else {
-        resolve({
-          message: "Invalid credentials",
-        });
-      }
-    }, 1000);
-  });
-};
-
-const userRegister = async (data: FieldValues) => {
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (data.email && data.password && data.username) {
-        resolve({
-          data: { id: "mock-id" },
-          message: "Registration successful",
-          success: true,
-        });
-      } else {
-        resolve({
-          message: "Registration failed - Missing required fields",
-          success: false,
-        });
-      }
-    }, 1000);
-  });
-};
-
-// Mock toast function - replace with your actual toast implementation
-const toast = {
-  success: (message: string) => {
-    console.log("Success:", message);
-    // You can replace this with your actual toast implementation
-  },
-  error: (message: string) => {
-    console.log("Error:", message);
-  },
-};
-
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
