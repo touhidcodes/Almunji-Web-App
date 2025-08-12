@@ -5,8 +5,8 @@ import { PanelRightOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Sidebar from "@/components/Dashboard/SideBar/SideBar";
-import DynamicBreadcrumb from "@/components/Shared/Breadcrumb/DynamicDashboardBreadcrumb";
-import DashboardAuthButton from "@/components/Custom/DashboardAuthButton/DashboardAuthButton";
+import DynamicBreadcrumb from "@/components/Shared/Breadcrumb/DynamicBreadcrumb";
+import DashboardAuthButton from "@/components/Custom/AuthButton/DashboardAuthButton";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
