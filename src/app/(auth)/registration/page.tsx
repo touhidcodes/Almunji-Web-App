@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { registerValidationSchema } from "@/schema/authSchema";
 import { userLogin } from "@/services/actions/userLogin";
+import { toast } from "sonner";
+import { userRegister } from "@/services/actions/userRegister";
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
