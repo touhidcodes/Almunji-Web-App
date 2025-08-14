@@ -11,6 +11,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { loginValidationSchema } from "@/schema/authSchema";
+import { userLogin } from "@/services/actions/userLogin";
+import { toast } from "sonner";
+import { userRegister } from "@/services/actions/userRegister";
 
 interface LoginPageProps {
   isLogin?: boolean;
@@ -64,31 +67,6 @@ const LoginPage = ({
       }
     } catch (err) {
       setError("Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (data: FieldValues) => {
-    try {
-      setLoading(true);
-      setError("");
-      const res: any = await userRegister(data);
-
-      if (res?.data?.id && res?.success !== false) {
-        toast.success(res.message);
-        router.push("/");
-      } else {
-        setError(res?.message || "Registration failed!");
-      }
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        const errorMessage =
-          err.response?.data?.message || "Registration failed";
-        setError(errorMessage);
-      } else {
-        setError("Unexpected error occurred");
-      }
     } finally {
       setLoading(false);
     }

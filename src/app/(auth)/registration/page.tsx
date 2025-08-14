@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { registerValidationSchema } from "@/schema/authSchema";
+import { userLogin } from "@/services/actions/userLogin";
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
