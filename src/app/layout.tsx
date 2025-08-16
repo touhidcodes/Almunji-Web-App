@@ -5,7 +5,7 @@ import Footer from "@/components/Shared/Footer/Footer";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Almunji",
+  title: "Almunji Web App",
   description: "Almunji Web App",
 };
 

@@ -13,6 +13,6 @@ export const userRegister = async (data: FieldValues) => {
     cache: "no-store",
   });
 
-  const patientInfo = await res.json();
-  return patientInfo;
+  const userInfo = await res.json();
+  return userInfo;
 };
