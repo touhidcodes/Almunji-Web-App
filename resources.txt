@@ -1,3 +1,8 @@
 Postman Documentation: https://documenter.getpostman.com/view/39058010/2sB2j979Eu
 Server Link: https://server.almunji.com/
 API Example: https://server.almunji.com/api/v1/dictionary/suggestion
+
+UI Inspirations: 
+1. https://cdn.dribbble.com/userupload/9142734/file/original-7ecf8d038484caac6bb2df7cdef88be9.png?resize=752x&vertical=center
+2. https://cdn.dribbble.com/userupload/11427989/file/original-e6890332c95cb28745b322a35a00617d.jpg?resize=752x&vertical=center
+3. https://www.behance.net/gallery/225715401/Tasqif-Muslim-E-Learning-Landing-Page/modules/1290485683
