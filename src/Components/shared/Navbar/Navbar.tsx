@@ -1,96 +1,123 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { Menu } from "lucide-react";
-import logo from "../../../../public/assets/logo/black.png";
+import React, { useState } from "react";
+import { Book, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
+  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import Button from "@/components/ui/Button/Button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-const navigationOptions: { title: string; href: string }[] = [
-  { title: "Services", href: "/#services" },
-  { title: "My Work", href: "/projects" },
-  { title: "Blogs", href: "/blogs" },
-];
-
-export default function NavBar() {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const navigationLinks = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About us" },
+    { href: "/reciters", label: "Reciters" },
+    { href: "/blog", label: "Blog" },
+    { href: "/contact", label: "Contact" },
+  ];
+
   return (
-    <header className="max-w-screen-xl mx-auto flex justify-between items-center px-3 md:px-0 sticky top-0 z-50 bg-white">
-      {/* Logo (Hidden on Mobile) */}
-      <div className="hidden md:block">
-        <Link href="/">
-          <Image src={logo} alt="Logo" width={180} height={50} />
-        </Link>
-      </div>
+    <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-teal-600 rounded flex items-center justify-center">
+              <Book className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-800">Almunji</span>
+          </div>
 
-      {/* Desktop Navigation */}
-      <nav className="hidden md:flex">
-        <NavigationMenu>
-          <NavigationMenuList className="flex gap-6">
-            {navigationOptions.map((nav) => (
-              <NavigationMenuItem key={nav.title}>
-                <Link href={nav.href} passHref legacyBehavior>
-                  <NavigationMenuLink className="text-xl font-semibold px-4 py-3 rounded-lg transition-all duration-300 hover:bg-gray-100">
-                    {nav.title}
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navigationLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-gray-600 hover:text-teal-600 transition-colors font-medium hover:underline underline-offset-4"
+              >
+                {link.label}
+              </a>
             ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-      </nav>
+          </div>
 
-      {/* Mobile Menu and Logo */}
-      <div className="md:hidden flex justify-between items-center w-full">
-        {/* Logo on the Left Side */}
-        <div>
-          <Image src={logo} alt="Logo" width={180} height={50} />
-        </div>
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              className="text-gray-600 hover:text-teal-600 font-medium"
+            >
+              Sign In
+            </Button>
+            <Button className="bg-teal-600 text-white hover:bg-teal-700 font-medium">
+              Sign Up
+            </Button>
+          </div>
 
-        {/* Mobile Dropdown on the Right Side */}
-        <div className="ml-auto">
-          <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-            <DropdownMenuTrigger className="p-2 rounded-lg hover:bg-gray-200 transition">
-              <Menu size={28} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48 bg-white shadow-lg rounded-lg">
-              {navigationOptions.map((nav) => (
-                <DropdownMenuItem key={nav.title}>
-                  <Link
-                    href={nav.href}
-                    className="block w-full px-4 py-2 hover:bg-gray-100 rounded-md"
-                  >
-                    {nav.title}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-teal-600 rounded flex items-center justify-center">
+                        <Book className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-xl font-bold text-gray-800">
+                        QuranHub
+                      </span>
+                    </div>
+                  </SheetTitle>
+                  <SheetDescription>
+                    Navigate through our Quran reading platform
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-6">
+                  {navigationLinks.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      className="text-lg font-medium text-gray-600 hover:text-teal-600 transition-colors p-2 rounded-lg hover:bg-gray-50"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                  <div className="border-t pt-4 space-y-2">
+                    <Button variant="outline" className="w-full">
+                      Sign In
+                    </Button>
+                    <Button className="w-full bg-teal-600 hover:bg-teal-700">
+                      Sign Up
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
-
-      {/* Start Project Button */}
-      <div className="hidden md:block">
-        <Button
-          text="Start a New Project 🚀"
-          link="/#contact"
-          className="w-fit bg-white border-2 border-black text-black font-bold py-3 px-5 rounded-lg hover:border-2 hover:border-black hover:bg-black hover:text-white transition-all duration-300"
-        />
-      </div>
-    </header>
+    </nav>
   );
-}
+};
+
+export default Navbar;
