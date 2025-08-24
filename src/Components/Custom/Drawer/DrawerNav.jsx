@@ -46,7 +46,7 @@ const DrawerNav = () => {
               <Link>Dowa</Link>
             </li>
             <li>
-              <Link>Dowa</Link>
+              <Link>Surah</Link>
             </li>
           </ul>
         </details>
