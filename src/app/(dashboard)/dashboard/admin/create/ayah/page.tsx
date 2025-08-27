@@ -1,4 +1,4 @@
-const Page = () => {
+const CreateAyahPage = () => {
   return (
     <div>
       <h2>Welcome to the Page page</h2>
@@ -6,4 +6,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default CreateAyahPage;
