@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Sidebar from "@/components/Dashboard/SideBar/SideBar";
 import DynamicBreadcrumb from "@/components/Shared/Breadcrumb/DynamicBreadcrumb";
-import DashboardAuthButton from "@/components/Custom/AuthButton/DashboardAuthButton";
+import DashboardAuthButton from "@/components/Shared/AuthButton/DashboardAuthButton";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
