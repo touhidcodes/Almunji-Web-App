@@ -1,4 +1,4 @@
-// app/(quran)/layout.jsx
+// app/(quran)/layout.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -6,8 +6,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 
+// Types
+interface Surah {
+  id: number;
+  name: string;
+  englishName: string;
+  ayahCount: number;
+  revelationType: "Makkah" | "Madinah";
+}
+
+interface QuranLayoutProps {
+  children: React.ReactNode;
+}
+
 // Sample Surah data - you can move this to a separate data file or fetch from API
-const surahs = [
+const surahs: Surah[] = [
   {
     id: 1,
     name: "Al Fatihah",
@@ -156,11 +169,7 @@ const SurahSidebar = () => {
   );
 };
 
-export default function QuranLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function QuranLayout({ children }: QuranLayoutProps) {
   return (
     <div className="flex h-screen bg-gray-50">
       <SurahSidebar />
