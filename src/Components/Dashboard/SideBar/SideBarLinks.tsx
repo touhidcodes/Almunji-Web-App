@@ -1,90 +1,13 @@
-// import {
-//   FileText,
-//   LayoutDashboard,
-//   LineChart,
-//   PlusCircle,
-//   Settings,
-//   FileStack,
-//   House,
-//   Notebook,
-//   NotepadText,
-//   MessageCircle,
-//   FileUp,
-// } from "lucide-react";
-
-// export const SidebarLinks = [
-//   {
-//     section: "Main",
-//     items: [
-//       { label: "Quick Create", icon: PlusCircle, href: "#", active: true },
-//       { label: "Home", icon: House, href: "/" },
-//       { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-//       { label: "Analytics", icon: LineChart, href: "#" },
-//     ],
-//   },
-//   {
-//     section: "Projects",
-//     items: [
-//       { label: "Projects", icon: FileStack, href: "/dashboard/projects" },
-//       {
-//         label: "Create Project",
-//         icon: FileUp,
-//         href: "/dashboard/projects/create",
-//       },
-//     ],
-//   },
-//   {
-//     section: "Blogs",
-//     items: [
-//       { label: "Blogs", icon: Notebook, href: "/dashboard/blogs" },
-//       {
-//         label: "Create Blog",
-//         icon: NotepadText,
-//         href: "/dashboard/blogs/create",
-//       },
-//     ],
-//   },
-//   {
-//     section: "Message",
-//     items: [
-//       {
-//         label: "Messages",
-//         icon: MessageCircle,
-//         href: "/dashboard/messages",
-//       },
-//     ],
-//   },
-//   {
-//     section: "Resume",
-//     items: [
-//       {
-//         label: "Update",
-//         icon: FileText,
-//         href: "/dashboard/resume",
-//       },
-//     ],
-//   },
-//   {
-//     section: "Settings",
-//     items: [{ label: "Settings", icon: Settings, href: "#" }],
-//   },
-// ];
-
+import { authRole, TAuthRole } from "@/constants/authRoles";
 import {
-  Home,
   PersonStanding,
   HomeIcon,
   ShoppingCart,
-  MessageCircle,
-  FileText,
   LayoutDashboard,
   Users,
   Star,
   KeyRound,
 } from "lucide-react";
-
-import { USER_ROLE } from "@/constants/role";
-import { UserRole } from "@/types";
 
 // Type definition for the sidebar item
 type SidebarGroup = {
@@ -96,7 +19,7 @@ type SidebarGroup = {
   }[];
 };
 
-export const getSidebarLinks = (role: UserRole): SidebarGroup[] => {
+export const getSidebarLinks = (role: TAuthRole): SidebarGroup[] => {
   const defaultItems = [
     {
       section: "Profile",
@@ -121,7 +44,7 @@ export const getSidebarLinks = (role: UserRole): SidebarGroup[] => {
   ];
 
   switch (role) {
-    case USER_ROLE.ADMIN:
+    case authRole.ADMIN:
       return [
         {
           section: "Main",
@@ -137,27 +60,21 @@ export const getSidebarLinks = (role: UserRole): SidebarGroup[] => {
           section: "Manage",
           items: [
             {
-              label: "Property Listings",
-              href: "/dashboard/admin/listings",
+              label: "Create Surah",
+              href: "/dashboard/admin/create/surah",
               icon: HomeIcon,
             },
             {
-              label: "Bookings",
-              href: "/dashboard/admin/bookings",
-              icon: ShoppingCart,
+              label: "Create Ayah",
+              href: "/dashboard/admin/create/ayah",
+              icon: HomeIcon,
             },
-            {
-              label: "Reviews",
-              href: "/dashboard/admin/reviews",
-              icon: Star,
-            },
-            { label: "Users", href: "/dashboard/admin/users", icon: Users },
           ],
         },
         ...defaultItems,
       ];
 
-    case USER_ROLE.USER:
+    case authRole.USER:
       return [
         {
           section: "Main",
@@ -173,18 +90,8 @@ export const getSidebarLinks = (role: UserRole): SidebarGroup[] => {
           section: "My Activity",
           items: [
             {
-              label: "Property Listings",
-              href: "/dashboard/user/listings",
-              icon: HomeIcon,
-            },
-            {
-              label: "Bookings",
-              href: "/dashboard/user/bookings",
-              icon: ShoppingCart,
-            },
-            {
               label: "Reviews",
-              href: "/dashboard/user/reviews",
+              href: "/dashboard/user/bookmarks",
               icon: Star,
             },
           ],
