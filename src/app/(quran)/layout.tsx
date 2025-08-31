@@ -1,12 +1,11 @@
-// app/(quran)/layout.tsx
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
+import Navbar from "@/components/Shared/Navbar/Navbar";
 
-// Types
 interface Surah {
   id: number;
   name: string;
@@ -171,9 +170,12 @@ const SurahSidebar = () => {
 
 export default function QuranLayout({ children }: QuranLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
-      <SurahSidebar />
-      <div className="flex-1 overflow-y-auto">{children}</div>
+    <div>
+      <Navbar />
+      <div className="flex h-screen bg-gray-50">
+        <SurahSidebar />
+        <div className="flex-1 overflow-y-auto">{children}</div>
+      </div>
     </div>
   );
 }
