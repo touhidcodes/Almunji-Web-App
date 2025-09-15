@@ -5,7 +5,6 @@ import {
   Star,
   Download,
   Eye,
-  Filter,
   Grid,
   List,
 } from "lucide-react";
