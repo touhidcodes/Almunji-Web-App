@@ -5,6 +5,7 @@ import {
   Star,
   Download,
   Eye,
+  Filter,
   Grid,
   List,
 } from "lucide-react";
@@ -26,20 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  description: string;
-  category: string;
-  language: string;
-  pages: number;
-  rating: number;
-  downloads: number;
-  coverImage: string;
-  isPremium: boolean;
-}
+import { TBook } from "@/types/book";
 
 const BooksPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -162,7 +150,7 @@ const BooksPage: React.FC = () => {
     return matchesSearch && matchesCategory && matchesLanguage;
   });
 
-  const BookCard: React.FC<{ book: Book }> = ({ book }) => (
+  const BookCard: React.FC<{ book: TBook }> = ({ book }) => (
     <Card className="group hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
         <img
@@ -228,7 +216,7 @@ const BooksPage: React.FC = () => {
     </Card>
   );
 
-  const BookListItem: React.FC<{ book: Book }> = ({ book }) => (
+  const BookListItem: React.FC<{ book: TBook }> = ({ book }) => (
     <Card className="hover:shadow-md transition-shadow duration-300">
       <div className="flex p-4 gap-4">
         <div className="relative flex-shrink-0">
