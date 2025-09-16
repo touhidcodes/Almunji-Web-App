@@ -22,7 +22,7 @@ import {
   Calendar,
   Bell,
   Settings,
-  LucideProps,
+  LucideIcon,
 } from "lucide-react";
 
 const Overview = () => {
@@ -43,12 +43,12 @@ const Overview = () => {
     { name: "Support", value: 200, color: "#f59e0b" },
   ];
 
-  type TStarCard = {
-    icon: LucideProps;
+  type TStatCard = {
+    icon: LucideIcon;
     title: string;
     value: string;
-    change: () => void;
-    changeType: string;
+    change: string;
+    changeType: "positive" | "negative";
   };
 
   const StatCard = ({
@@ -57,7 +57,7 @@ const Overview = () => {
     value,
     change,
     changeType,
-  }: TStarCard) => (
+  }: TStatCard) => (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
       <div className="flex items-center justify-between">
         <div>
