@@ -35,7 +35,7 @@ const BooksPage: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const books: Book[] = [
+  const books: TBook[] = [
     {
       id: 1,
       title: "Tafsir Ibn Kathir",
