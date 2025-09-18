@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { Search, Plus, Edit, Trash2, Book, Save, X } from "lucide-react";
 
-const ManageAyahsPage = () => {
-  const [ayahs, setAyahs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSurah, setSelectedSurah] = useState("all");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingAyah, setEditingAyah] = useState(null);
-  const [newAyah, setNewAyah] = useState({
+// Define interfaces for type safety
+interface Ayah {
+  id: number;
+  surahName: string;
+  surahNumber: number;
+  ayahNumber: number;
+  arabicText: string;
+  transliteration: string;
+  translation: string;
+  revelation: "Meccan" | "Medinan";
+}
+
+interface NewAyahForm {
+  surahName: string;
+  surahNumber: string;
+  ayahNumber: string;
+  arabicText: string;
+  transliteration: string;
+  translation: string;
+  revelation: "Meccan" | "Medinan";
+}
+
+const ManageAyahsPage: React.FC = () => {
+  const [ayahs, setAyahs] = useState<Ayah[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedSurah, setSelectedSurah] = useState<string>("all");
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [editingAyah, setEditingAyah] = useState<Ayah | null>(null);
+  const [newAyah, setNewAyah] = useState<NewAyahForm>({
     surahName: "",
     surahNumber: "",
     ayahNumber: "",
@@ -19,7 +41,7 @@ const ManageAyahsPage = () => {
 
   // Sample data - in a real app, this would come from an API
   useEffect(() => {
-    const sampleAyahs = [
+    const sampleAyahs: Ayah[] = [
       {
         id: 1,
         surahName: "Al-Fatihah",
@@ -55,13 +77,13 @@ const ManageAyahsPage = () => {
     setAyahs(sampleAyahs);
   }, []);
 
-  const handleAddAyah = () => {
+  const handleAddAyah = (): void => {
     if (newAyah.surahName && newAyah.ayahNumber && newAyah.arabicText) {
-      const ayah = {
+      const ayah: Ayah = {
         ...newAyah,
         id: Date.now(),
-        surahNumber: parseInt(newAyah.surahNumber),
-        ayahNumber: parseInt(newAyah.ayahNumber),
+        surahNumber: parseInt(newAyah.surahNumber, 10),
+        ayahNumber: parseInt(newAyah.ayahNumber, 10),
       };
       setAyahs([...ayahs, ayah]);
       setNewAyah({
@@ -77,17 +99,32 @@ const ManageAyahsPage = () => {
     }
   };
 
-  const handleEditAyah = (ayah) => {
+  const handleEditAyah = (ayah: Ayah): void => {
     setEditingAyah(ayah);
-    setNewAyah(ayah);
+    setNewAyah({
+      surahName: ayah.surahName,
+      surahNumber: ayah.surahNumber.toString(),
+      ayahNumber: ayah.ayahNumber.toString(),
+      arabicText: ayah.arabicText,
+      transliteration: ayah.transliteration,
+      translation: ayah.translation,
+      revelation: ayah.revelation,
+    });
     setIsAddModalOpen(true);
   };
 
-  const handleUpdateAyah = () => {
+  const handleUpdateAyah = (): void => {
+    if (!editingAyah) return;
+
+    const updatedAyah: Ayah = {
+      ...newAyah,
+      id: editingAyah.id,
+      surahNumber: parseInt(newAyah.surahNumber, 10),
+      ayahNumber: parseInt(newAyah.ayahNumber, 10),
+    };
+
     setAyahs(
-      ayahs.map((ayah) =>
-        ayah.id === editingAyah.id ? { ...newAyah, id: editingAyah.id } : ayah
-      )
+      ayahs.map((ayah) => (ayah.id === editingAyah.id ? updatedAyah : ayah))
     );
     setEditingAyah(null);
     setNewAyah({
@@ -102,13 +139,13 @@ const ManageAyahsPage = () => {
     setIsAddModalOpen(false);
   };
 
-  const handleDeleteAyah = (id) => {
+  const handleDeleteAyah = (id: number): void => {
     if (window.confirm("Are you sure you want to delete this Ayah?")) {
       setAyahs(ayahs.filter((ayah) => ayah.id !== id));
     }
   };
 
-  const resetModal = () => {
+  const resetModal = (): void => {
     setIsAddModalOpen(false);
     setEditingAyah(null);
     setNewAyah({
@@ -140,6 +177,19 @@ const ManageAyahsPage = () => {
 
   // Get unique surah names for filter dropdown
   const uniqueSurahs = [...new Set(ayahs.map((ayah) => ayah.surahName))];
+
+  const handleInputChange = (field: keyof NewAyahForm, value: string): void => {
+    setNewAyah((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const isFormValid = (): boolean => {
+    return !!(
+      newAyah.surahName &&
+      newAyah.ayahNumber &&
+      newAyah.arabicText &&
+      newAyah.translation
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -307,7 +357,7 @@ const ManageAyahsPage = () => {
                         type="text"
                         value={newAyah.surahName}
                         onChange={(e) =>
-                          setNewAyah({ ...newAyah, surahName: e.target.value })
+                          handleInputChange("surahName", e.target.value)
                         }
                         placeholder="e.g., Al-Fatihah"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -321,10 +371,7 @@ const ManageAyahsPage = () => {
                         type="number"
                         value={newAyah.surahNumber}
                         onChange={(e) =>
-                          setNewAyah({
-                            ...newAyah,
-                            surahNumber: e.target.value,
-                          })
+                          handleInputChange("surahNumber", e.target.value)
                         }
                         placeholder="1"
                         min="1"
@@ -340,7 +387,7 @@ const ManageAyahsPage = () => {
                         type="number"
                         value={newAyah.ayahNumber}
                         onChange={(e) =>
-                          setNewAyah({ ...newAyah, ayahNumber: e.target.value })
+                          handleInputChange("ayahNumber", e.target.value)
                         }
                         placeholder="1"
                         min="1"
@@ -356,10 +403,10 @@ const ManageAyahsPage = () => {
                     <textarea
                       value={newAyah.arabicText}
                       onChange={(e) =>
-                        setNewAyah({ ...newAyah, arabicText: e.target.value })
+                        handleInputChange("arabicText", e.target.value)
                       }
                       placeholder="Enter Arabic text"
-                      rows="3"
+                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right"
                       style={{ fontFamily: "Arial, sans-serif" }}
                     />
@@ -372,13 +419,10 @@ const ManageAyahsPage = () => {
                     <textarea
                       value={newAyah.transliteration}
                       onChange={(e) =>
-                        setNewAyah({
-                          ...newAyah,
-                          transliteration: e.target.value,
-                        })
+                        handleInputChange("transliteration", e.target.value)
                       }
                       placeholder="Enter transliteration"
-                      rows="2"
+                      rows={2}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
@@ -390,10 +434,10 @@ const ManageAyahsPage = () => {
                     <textarea
                       value={newAyah.translation}
                       onChange={(e) =>
-                        setNewAyah({ ...newAyah, translation: e.target.value })
+                        handleInputChange("translation", e.target.value)
                       }
                       placeholder="Enter English translation"
-                      rows="3"
+                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
@@ -405,7 +449,10 @@ const ManageAyahsPage = () => {
                     <select
                       value={newAyah.revelation}
                       onChange={(e) =>
-                        setNewAyah({ ...newAyah, revelation: e.target.value })
+                        handleInputChange(
+                          "revelation",
+                          e.target.value as "Meccan" | "Medinan"
+                        )
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
@@ -424,12 +471,7 @@ const ManageAyahsPage = () => {
                   </button>
                   <button
                     onClick={editingAyah ? handleUpdateAyah : handleAddAyah}
-                    disabled={
-                      !newAyah.surahName ||
-                      !newAyah.ayahNumber ||
-                      !newAyah.arabicText ||
-                      !newAyah.translation
-                    }
+                    disabled={!isFormValid()}
                     className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                   >
                     <Save className="h-4 w-4" />
