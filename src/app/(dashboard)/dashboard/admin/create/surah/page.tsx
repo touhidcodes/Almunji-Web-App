@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Book,
   Save,
@@ -9,8 +9,40 @@ import {
   Calendar,
 } from "lucide-react";
 
-const CreateSurahPage = () => {
-  const [formData, setFormData] = useState({
+// Define interfaces for type safety
+interface SurahFormData {
+  surahNumber: string;
+  arabicName: string;
+  englishName: string;
+  transliteration: string;
+  meaning: string;
+  revelationType: "Meccan" | "Medinan" | "";
+  revelationPlace: "Mecca" | "Medina" | "";
+  revelationOrder: string;
+  totalAyahs: string;
+  totalWords: string;
+  totalLetters: string;
+  juzStart: string;
+  juzEnd: string;
+  hizbStart: string;
+  hizbEnd: string;
+  rukuhCount: string;
+  sajdahCount: string;
+  mainThemes: string;
+  introduction: string;
+  historicalContext: string;
+  tags: string;
+}
+
+interface FormErrors {
+  [key: string]: string;
+}
+
+type RevelationType = "Meccan" | "Medinan";
+type RevelationPlace = "Mecca" | "Medina";
+
+const CreateSurahPage: React.FC = () => {
+  const [formData, setFormData] = useState<SurahFormData>({
     surahNumber: "",
     arabicName: "",
     englishName: "",
@@ -34,14 +66,18 @@ const CreateSurahPage = () => {
     tags: "",
   });
 
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
-  const revelationTypes = ["Meccan", "Medinan"];
-  const revelationPlaces = ["Mecca", "Medina"];
+  const revelationTypes: RevelationType[] = ["Meccan", "Medinan"];
+  const revelationPlaces: RevelationPlace[] = ["Mecca", "Medina"];
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -57,13 +93,15 @@ const CreateSurahPage = () => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
 
+    const surahNumberValue = parseInt(formData.surahNumber, 10);
     if (
       !formData.surahNumber ||
-      formData.surahNumber < 1 ||
-      formData.surahNumber > 114
+      isNaN(surahNumberValue) ||
+      surahNumberValue < 1 ||
+      surahNumberValue > 114
     ) {
       newErrors.surahNumber = "Surah number must be between 1 and 114";
     }
@@ -84,22 +122,28 @@ const CreateSurahPage = () => {
       newErrors.revelationType = "Revelation type is required";
     }
 
-    if (!formData.totalAyahs || formData.totalAyahs < 1) {
+    const totalAyahsValue = parseInt(formData.totalAyahs, 10);
+    if (!formData.totalAyahs || isNaN(totalAyahsValue) || totalAyahsValue < 1) {
       newErrors.totalAyahs = "Total ayahs must be a positive number";
     }
 
-    if (
-      formData.revelationOrder &&
-      (formData.revelationOrder < 1 || formData.revelationOrder > 114)
-    ) {
-      newErrors.revelationOrder = "Revelation order must be between 1 and 114";
+    if (formData.revelationOrder) {
+      const revelationOrderValue = parseInt(formData.revelationOrder, 10);
+      if (
+        isNaN(revelationOrderValue) ||
+        revelationOrderValue < 1 ||
+        revelationOrderValue > 114
+      ) {
+        newErrors.revelationOrder =
+          "Revelation order must be between 1 and 114";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     if (!validateForm()) {
       return;
     }
@@ -109,35 +153,13 @@ const CreateSurahPage = () => {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise<void>((resolve) => setTimeout(resolve, 1500));
 
       setSubmitSuccess(true);
 
       // Reset form after successful submission
       setTimeout(() => {
-        setFormData({
-          surahNumber: "",
-          arabicName: "",
-          englishName: "",
-          transliteration: "",
-          meaning: "",
-          revelationType: "",
-          revelationPlace: "",
-          revelationOrder: "",
-          totalAyahs: "",
-          totalWords: "",
-          totalLetters: "",
-          juzStart: "",
-          juzEnd: "",
-          hizbStart: "",
-          hizbEnd: "",
-          rukuhCount: "",
-          sajdahCount: "",
-          mainThemes: "",
-          introduction: "",
-          historicalContext: "",
-          tags: "",
-        });
+        resetFormData();
         setSubmitSuccess(false);
       }, 2000);
     } catch (error) {
@@ -147,7 +169,7 @@ const CreateSurahPage = () => {
     }
   };
 
-  const handleReset = () => {
+  const resetFormData = (): void => {
     setFormData({
       surahNumber: "",
       arabicName: "",
@@ -171,9 +193,105 @@ const CreateSurahPage = () => {
       historicalContext: "",
       tags: "",
     });
+  };
+
+  const handleReset = (): void => {
+    resetFormData();
     setErrors({});
     setSubmitSuccess(false);
   };
+
+  const renderInputField = (
+    name: keyof SurahFormData,
+    label: string,
+    type: string = "text",
+    placeholder: string = "",
+    required: boolean = false,
+    min?: string | number,
+    max?: string | number,
+    additionalProps?: React.InputHTMLAttributes<HTMLInputElement>
+  ) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label} {required && "*"}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={formData[name]}
+        onChange={handleInputChange}
+        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+          errors[name] ? "border-red-500" : "border-gray-300"
+        }`}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        {...additionalProps}
+      />
+      {errors[name] && (
+        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+          <AlertCircle className="h-4 w-4" />
+          {errors[name]}
+        </p>
+      )}
+    </div>
+  );
+
+  const renderSelectField = (
+    name: keyof SurahFormData,
+    label: string,
+    options: readonly string[],
+    required: boolean = false,
+    defaultOption: string = "Select"
+  ) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label} {required && "*"}
+      </label>
+      <select
+        name={name}
+        value={formData[name]}
+        onChange={handleInputChange}
+        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+          errors[name] ? "border-red-500" : "border-gray-300"
+        }`}
+      >
+        <option value="">{defaultOption}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      {errors[name] && (
+        <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+          <AlertCircle className="h-4 w-4" />
+          {errors[name]}
+        </p>
+      )}
+    </div>
+  );
+
+  const renderTextAreaField = (
+    name: keyof SurahFormData,
+    label: string,
+    rows: number = 3,
+    placeholder: string = ""
+  ) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
+      <textarea
+        name={name}
+        value={formData[name]}
+        onChange={handleInputChange}
+        rows={rows}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+        placeholder={placeholder}
+      />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -212,52 +330,23 @@ const CreateSurahPage = () => {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Surah Number *
-                  </label>
-                  <input
-                    type="number"
-                    name="surahNumber"
-                    value={formData.surahNumber}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                      errors.surahNumber ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="1-114"
-                    min="1"
-                    max="114"
-                  />
-                  {errors.surahNumber && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.surahNumber}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Total Ayahs *
-                  </label>
-                  <input
-                    type="number"
-                    name="totalAyahs"
-                    value={formData.totalAyahs}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                      errors.totalAyahs ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="7"
-                    min="1"
-                  />
-                  {errors.totalAyahs && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.totalAyahs}
-                    </p>
-                  )}
-                </div>
+                {renderInputField(
+                  "surahNumber",
+                  "Surah Number",
+                  "number",
+                  "1-114",
+                  true,
+                  1,
+                  114
+                )}
+                {renderInputField(
+                  "totalAyahs",
+                  "Total Ayahs",
+                  "number",
+                  "7",
+                  true,
+                  1
+                )}
               </div>
             </div>
 
@@ -268,95 +357,46 @@ const CreateSurahPage = () => {
               </h3>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Arabic Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="arabicName"
-                    value={formData.arabicName}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-right ${
-                      errors.arabicName ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="الفاتحة"
-                    style={{
+                {renderInputField(
+                  "arabicName",
+                  "Arabic Name",
+                  "text",
+                  "الفاتحة",
+                  true,
+                  undefined,
+                  undefined,
+                  {
+                    style: {
                       fontFamily: "Arial, sans-serif",
                       fontSize: "18px",
-                    }}
-                  />
-                  {errors.arabicName && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.arabicName}
-                    </p>
+                      textAlign: "right" as const,
+                    },
+                  }
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renderInputField(
+                    "englishName",
+                    "English Name",
+                    "text",
+                    "The Opening",
+                    true
+                  )}
+                  {renderInputField(
+                    "transliteration",
+                    "Transliteration",
+                    "text",
+                    "Al-Fatiha",
+                    true
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      English Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="englishName"
-                      value={formData.englishName}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        errors.englishName
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="The Opening"
-                    />
-                    {errors.englishName && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-4 w-4" />
-                        {errors.englishName}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Transliteration *
-                    </label>
-                    <input
-                      type="text"
-                      name="transliteration"
-                      value={formData.transliteration}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                        errors.transliteration
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Al-Fatiha"
-                    />
-                    {errors.transliteration && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-4 w-4" />
-                        {errors.transliteration}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Meaning
-                  </label>
-                  <input
-                    type="text"
-                    name="meaning"
-                    value={formData.meaning}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="The Opening, The Opener"
-                  />
-                </div>
+                {renderInputField(
+                  "meaning",
+                  "Meaning",
+                  "text",
+                  "The Opening, The Opener"
+                )}
               </div>
             </div>
 
@@ -368,78 +408,29 @@ const CreateSurahPage = () => {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Revelation Type *
-                  </label>
-                  <select
-                    name="revelationType"
-                    value={formData.revelationType}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                      errors.revelationType
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select Type</option>
-                    {revelationTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.revelationType && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.revelationType}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Revelation Place
-                  </label>
-                  <select
-                    name="revelationPlace"
-                    value={formData.revelationPlace}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="">Select Place</option>
-                    {revelationPlaces.map((place) => (
-                      <option key={place} value={place}>
-                        {place}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Revelation Order
-                  </label>
-                  <input
-                    type="number"
-                    name="revelationOrder"
-                    value={formData.revelationOrder}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                      errors.revelationOrder
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                    placeholder="5"
-                    min="1"
-                    max="114"
-                  />
-                  {errors.revelationOrder && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.revelationOrder}
-                    </p>
-                  )}
-                </div>
+                {renderSelectField(
+                  "revelationType",
+                  "Revelation Type",
+                  revelationTypes,
+                  true,
+                  "Select Type"
+                )}
+                {renderSelectField(
+                  "revelationPlace",
+                  "Revelation Place",
+                  revelationPlaces,
+                  false,
+                  "Select Place"
+                )}
+                {renderInputField(
+                  "revelationOrder",
+                  "Revelation Order",
+                  "number",
+                  "5",
+                  false,
+                  1,
+                  114
+                )}
               </div>
             </div>
 
@@ -450,50 +441,30 @@ const CreateSurahPage = () => {
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Total Words
-                  </label>
-                  <input
-                    type="number"
-                    name="totalWords"
-                    value={formData.totalWords}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="29"
-                    min="1"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Total Letters
-                  </label>
-                  <input
-                    type="number"
-                    name="totalLetters"
-                    value={formData.totalLetters}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="139"
-                    min="1"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sajdah Count
-                  </label>
-                  <input
-                    type="number"
-                    name="sajdahCount"
-                    value={formData.sajdahCount}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
+                {renderInputField(
+                  "totalWords",
+                  "Total Words",
+                  "number",
+                  "29",
+                  false,
+                  1
+                )}
+                {renderInputField(
+                  "totalLetters",
+                  "Total Letters",
+                  "number",
+                  "139",
+                  false,
+                  1
+                )}
+                {renderInputField(
+                  "sajdahCount",
+                  "Sajdah Count",
+                  "number",
+                  "0",
+                  false,
+                  0
+                )}
               </div>
             </div>
 
@@ -510,89 +481,63 @@ const CreateSurahPage = () => {
                     Juz (Para) Range
                   </h4>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        Start Juz
-                      </label>
-                      <input
-                        type="number"
-                        name="juzStart"
-                        value={formData.juzStart}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="1"
-                        min="1"
-                        max="30"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        End Juz
-                      </label>
-                      <input
-                        type="number"
-                        name="juzEnd"
-                        value={formData.juzEnd}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="1"
-                        min="1"
-                        max="30"
-                      />
-                    </div>
+                    {renderInputField(
+                      "juzStart",
+                      "Start Juz",
+                      "number",
+                      "1",
+                      false,
+                      1,
+                      30
+                    )}
+                    {renderInputField(
+                      "juzEnd",
+                      "End Juz",
+                      "number",
+                      "1",
+                      false,
+                      1,
+                      30
+                    )}
                   </div>
                 </div>
 
                 <div>
                   <h4 className="font-medium text-gray-800 mb-3">Hizb Range</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        Start Hizb
-                      </label>
-                      <input
-                        type="number"
-                        name="hizbStart"
-                        value={formData.hizbStart}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="1"
-                        min="1"
-                        max="60"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-600 mb-1">
-                        End Hizb
-                      </label>
-                      <input
-                        type="number"
-                        name="hizbEnd"
-                        value={formData.hizbEnd}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="1"
-                        min="1"
-                        max="60"
-                      />
-                    </div>
+                    {renderInputField(
+                      "hizbStart",
+                      "Start Hizb",
+                      "number",
+                      "1",
+                      false,
+                      1,
+                      60
+                    )}
+                    {renderInputField(
+                      "hizbEnd",
+                      "End Hizb",
+                      "number",
+                      "1",
+                      false,
+                      1,
+                      60
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Rukuh Count
-                </label>
-                <input
-                  type="number"
-                  name="rukuhCount"
-                  value={formData.rukuhCount}
-                  onChange={handleInputChange}
-                  className="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="1"
-                  min="1"
-                />
+                {renderInputField(
+                  "rukuhCount",
+                  "Rukuh Count",
+                  "number",
+                  "1",
+                  false,
+                  1,
+                  undefined,
+                  { className: "w-full md:w-1/3" }
+                )}
               </div>
             </div>
 
@@ -604,62 +549,38 @@ const CreateSurahPage = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Main Themes
-                  </label>
-                  <input
-                    type="text"
-                    name="mainThemes"
-                    value={formData.mainThemes}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Prayer, Guidance, Praise of Allah"
-                  />
+                  {renderInputField(
+                    "mainThemes",
+                    "Main Themes",
+                    "text",
+                    "Prayer, Guidance, Praise of Allah"
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     Separate themes with commas
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Introduction
-                  </label>
-                  <textarea
-                    name="introduction"
-                    value={formData.introduction}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Brief introduction about this Surah..."
-                  />
-                </div>
+                {renderTextAreaField(
+                  "introduction",
+                  "Introduction",
+                  3,
+                  "Brief introduction about this Surah..."
+                )}
+
+                {renderTextAreaField(
+                  "historicalContext",
+                  "Historical Context",
+                  4,
+                  "Historical background and circumstances of revelation..."
+                )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Historical Context
-                  </label>
-                  <textarea
-                    name="historicalContext"
-                    value={formData.historicalContext}
-                    onChange={handleInputChange}
-                    rows="4"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Historical background and circumstances of revelation..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tags
-                  </label>
-                  <input
-                    type="text"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="opening, prayer, essential, daily"
-                  />
+                  {renderInputField(
+                    "tags",
+                    "Tags",
+                    "text",
+                    "opening, prayer, essential, daily"
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     Separate tags with commas
                   </p>
