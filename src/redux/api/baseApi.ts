@@ -4,7 +4,8 @@ import { axiosBaseQuery } from "../../helpers/axios/axiosBaseQuery";
 
 // const baseUrl = `${import.meta.env.BACKEND_URL}`;
 const baseUrl = `http://localhost:5000/api`;
-const quranApiUrl = `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions`;
+// const quranApiUrl = `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions`;
+const quranApiUrl = `https://quranapi.pages.dev/api`;
 
 // Define a service using a base URL and expected endpoints
 export const baseApi = createApi({
