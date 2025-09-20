@@ -1,89 +1,32 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import {
-  Search,
-  BookOpen,
   Moon,
   Sun,
   Settings,
   Play,
   Pause,
   Volume2,
-  ChevronLeft,
-  ChevronRight,
+  VolumeX,
   Menu,
-  X,
-  MapPin,
-  Hash,
 } from "lucide-react";
-
-// Mock Redux data - replace with actual Redux implementation
-const mockSurahs = [
-  {
-    surahName: "Al-Faatiha",
-    surahNameArabic: "الفاتحة",
-    surahNameArabicLong: "سُورَةُ ٱلْفَاتِحَةِ",
-    surahNameTranslation: "The Opening",
-    revelationPlace: "Mecca",
-    totalAyah: 7,
-  },
-  {
-    surahName: "Al-Baqara",
-    surahNameArabic: "البقرة",
-    surahNameArabicLong: "سورة البقرة",
-    surahNameTranslation: "The Cow",
-    revelationPlace: "Madina",
-    totalAyah: 286,
-  },
-  {
-    surahName: "Aal-i-Imraan",
-    surahNameArabic: "آل عمران",
-    surahNameArabicLong: "سورة آل عمران",
-    surahNameTranslation: "The Family of Imraan",
-    revelationPlace: "Madina",
-    totalAyah: 200,
-  },
-  {
-    surahName: "An-Nisaa",
-    surahNameArabic: "النساء",
-    surahNameArabicLong: "سورة النساء",
-    surahNameTranslation: "The Women",
-    revelationPlace: "Madina",
-    totalAyah: 176,
-  },
-  {
-    surahName: "Al-Maida",
-    surahNameArabic: "المائدة",
-    surahNameArabicLong: "سورة المائدة",
-    surahNameTranslation: "The Table",
-    revelationPlace: "Madina",
-    totalAyah: 120,
-  },
-];
-
-// Mock verse data
-const mockVerses = {
-  1: [
-    {
-      ayahNumber: 1,
-      arabicText: "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ",
-      translation:
-        "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
-    },
-    {
-      ayahNumber: 2,
-      arabicText: "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَـٰلَمِینَ",
-      translation: "Praise is due to Allah, Lord of the worlds.",
-    },
-    {
-      ayahNumber: 3,
-      arabicText: "ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ",
-      translation: "The Entirely Merciful, the Especially Merciful.",
-    },
-  ],
-};
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
+import SurahSidebar from "@/components/Pages/Surah/SurahSidebar";
 
 interface Surah {
+  id: number;
   surahName: string;
   surahNameArabic: string;
   surahNameArabicLong: string;
@@ -92,443 +35,267 @@ interface Surah {
   totalAyah: number;
 }
 
-interface Verse {
-  ayahNumber: number;
-  arabicText: string;
-  translation: string;
+interface QuranLayoutProps {
+  children: React.ReactNode;
+  surahs: Surah[];
+  selectedSurahId: number;
+  onSurahSelect: (surahId: number) => void;
+  currentSurah?: Surah;
+  isLoading?: boolean;
 }
 
-const QuranLayout: React.FC = () => {
-  const [selectedSurah, setSelectedSurah] = useState<number>(1);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
-  const [fontSize, setFontSize] = useState<number>(18);
+export const QuranLayout = ({
+  children,
+  surahs,
+  selectedSurahId,
+  onSurahSelect,
+  currentSurah,
+  isLoading = false,
+}: QuranLayoutProps) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [fontSize, setFontSize] = useState([18]);
+  const [volume, setVolume] = useState([70]);
 
-  // Filter surahs based on search
-  const filteredSurahs = mockSurahs.filter(
-    (surah) =>
-      surah.surahName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      surah.surahNameTranslation
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      surah.surahNameArabic.includes(searchQuery)
-  );
+  // Handle dark mode
+  useEffect(() => {
+    const isDark = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
 
-  const currentSurah = mockSurahs[selectedSurah - 1];
-  const currentVerses = mockVerses[selectedSurah] || [];
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem("darkMode", newMode.toString());
+    if (newMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const togglePlayPause = () => setIsPlaying(!isPlaying);
+  const toggleMute = () => setIsMuted(!isMuted);
 
   return (
-    <div
-      className={`min-h-screen ${
-        isDarkMode ? "dark bg-gray-900" : "bg-gray-50"
-      } transition-colors duration-300`}
-    >
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Header */}
-      <header
-        className={`sticky top-0 z-50 ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-gray-200"
-        } border-b shadow-sm`}
-      >
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left side */}
           <div className="flex items-center gap-4">
-            <button
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={toggleSidebar}
-              className={`p-2 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
+              className="h-9 w-9 p-0 lg:hidden"
             >
-              {isSidebarOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
-            <div className="flex items-center gap-2">
-              <BookOpen
-                className={`w-6 h-6 ${
-                  isDarkMode ? "text-emerald-400" : "text-emerald-600"
-                }`}
-              />
-              <span
-                className={`text-xl font-bold ${
-                  isDarkMode ? "text-white" : "text-gray-800"
-                }`}
-              >
-                Quran Majeed
-              </span>
-            </div>
+              <Menu className="h-4 w-4" />
+            </Button>
+
+            {/* Current Surah Info */}
+            {currentSurah && (
+              <div className="hidden sm:flex items-center gap-3">
+                <Badge variant="outline" className="font-medium">
+                  {currentSurah.id}
+                </Badge>
+                <div>
+                  <h2 className="font-semibold text-gray-900 dark:text-white">
+                    {currentSurah.surahName}
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {currentSurah.surahNameTranslation}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right side */}
           <div className="flex items-center gap-2">
             {/* Audio Controls */}
-            <button
-              onClick={togglePlayPause}
-              className={`p-2 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            >
-              {isPlaying ? (
-                <Pause className="w-5 h-5" />
-              ) : (
-                <Play className="w-5 h-5" />
-              )}
-            </button>
-            <button
-              className={`p-2 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            >
-              <Volume2 className="w-5 h-5" />
-            </button>
+            <div className="hidden md:flex items-center gap-1 mr-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={togglePlayPause}
+                className={cn(
+                  "h-9 w-9 p-0",
+                  isPlaying && "text-emerald-600 dark:text-emerald-400"
+                )}
+              >
+                {isPlaying ? (
+                  <Pause className="h-4 w-4" />
+                ) : (
+                  <Play className="h-4 w-4" />
+                )}
+              </Button>
 
-            {/* Font Size Controls */}
-            <div className="flex items-center gap-1 mx-2">
-              <button
-                onClick={() => setFontSize(Math.max(14, fontSize - 2))}
-                className={`px-2 py-1 text-sm rounded ${
-                  isDarkMode
-                    ? "text-gray-300 hover:bg-gray-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMute}
+                className="h-9 w-9 p-0"
               >
-                A-
-              </button>
-              <button
-                onClick={() => setFontSize(Math.min(24, fontSize + 2))}
-                className={`px-2 py-1 text-sm rounded ${
-                  isDarkMode
-                    ? "text-gray-300 hover:bg-gray-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                A+
-              </button>
+                {isMuted ? (
+                  <VolumeX className="h-4 w-4" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+              </Button>
+
+              {/* Volume Control */}
+              <div className="hidden lg:flex items-center gap-2 w-20">
+                <Slider
+                  value={volume}
+                  onValueChange={setVolume}
+                  max={100}
+                  step={5}
+                  className="flex-1"
+                />
+              </div>
             </div>
 
-            <button
+            {/* Font Size Controls */}
+            <div className="hidden sm:flex items-center gap-1 mr-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFontSize([Math.max(14, fontSize[0] - 2)])}
+                disabled={fontSize[0] <= 14}
+                className="h-8 px-2 text-xs font-medium"
+              >
+                A-
+              </Button>
+              <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[2rem] text-center">
+                {fontSize[0]}px
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFontSize([Math.min(28, fontSize[0] + 2)])}
+                disabled={fontSize[0] >= 28}
+                className="h-8 px-2 text-xs font-medium"
+              >
+                A+
+              </Button>
+            </div>
+
+            {/* Dark Mode Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={toggleDarkMode}
-              className={`p-2 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
+              className="h-9 w-9 p-0"
             >
               {isDarkMode ? (
-                <Sun className="w-5 h-5" />
+                <Sun className="h-4 w-4" />
               ) : (
-                <Moon className="w-5 h-5" />
+                <Moon className="h-4 w-4" />
               )}
-            </button>
-            <button
-              className={`p-2 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+            </Button>
+
+            {/* Settings Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Reading Settings</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                {/* Mobile Font Size Control */}
+                <div className="sm:hidden px-2 py-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Font Size</span>
+                    <span className="text-xs text-gray-500">
+                      {fontSize[0]}px
+                    </span>
+                  </div>
+                  <Slider
+                    value={fontSize}
+                    onValueChange={setFontSize}
+                    min={14}
+                    max={28}
+                    step={2}
+                  />
+                </div>
+
+                {/* Mobile Volume Control */}
+                <div className="md:hidden px-2 py-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Volume</span>
+                    <span className="text-xs text-gray-500">{volume[0]}%</span>
+                  </div>
+                  <Slider
+                    value={volume}
+                    onValueChange={setVolume}
+                    max={100}
+                    step={5}
+                  />
+                </div>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem onClick={toggleDarkMode}>
+                  {isDarkMode ? (
+                    <>
+                      <Sun className="mr-2 h-4 w-4" />
+                      Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="mr-2 h-4 w-4" />
+                      Dark Mode
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
 
       <div className="flex">
-        {/* Sidebar - Surah List */}
-        <aside
-          className={`${
-            isSidebarOpen ? "w-80" : "w-0"
-          } transition-all duration-300 overflow-hidden ${
-            isDarkMode ? "bg-gray-800" : "bg-white"
-          } border-r ${
-            isDarkMode ? "border-gray-700" : "border-gray-200"
-          } h-screen sticky top-16`}
-        >
-          <div className="p-4">
-            {/* Search */}
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder="Search Surah..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
-                  isDarkMode
-                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                    : "bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-500"
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500`}
-              />
-              <Search
-                className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              />
-            </div>
+        {/* Sidebar */}
+        <SurahSidebar
+          surahs={surahs}
+          selectedSurahId={selectedSurahId}
+          onSurahSelect={onSurahSelect}
+          isOpen={isSidebarOpen}
+          onToggle={toggleSidebar}
+          isLoading={isLoading}
+        />
 
-            {/* Surah List */}
-            <div className="space-y-1 max-h-[calc(100vh-140px)] overflow-y-auto">
-              {filteredSurahs.map((surah, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedSurah(index + 1)}
-                  className={`w-full text-left p-4 rounded-lg transition-colors ${
-                    selectedSurah === index + 1
-                      ? isDarkMode
-                        ? "bg-emerald-600 text-white"
-                        : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                      : isDarkMode
-                      ? "hover:bg-gray-700 text-gray-300"
-                      : "hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <span
-                      className={`text-sm font-medium ${
-                        selectedSurah === index + 1
-                          ? isDarkMode
-                            ? "text-emerald-200"
-                            : "text-emerald-600"
-                          : isDarkMode
-                          ? "text-gray-400"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <div className="flex items-center gap-2 text-xs">
-                      <MapPin className="w-3 h-3" />
-                      <span>{surah.revelationPlace}</span>
-                    </div>
-                  </div>
-
-                  <div className="mb-1">
-                    <h3 className="font-semibold text-base">
-                      {surah.surahName}
-                    </h3>
-                    <p
-                      className="text-lg font-arabic text-right mb-1"
-                      dir="rtl"
-                    >
-                      {surah.surahNameArabic}
-                    </p>
-                    <p
-                      className={`text-sm ${
-                        selectedSurah === index + 1
-                          ? isDarkMode
-                            ? "text-emerald-100"
-                            : "text-emerald-700"
-                          : isDarkMode
-                          ? "text-gray-400"
-                          : "text-gray-600"
-                      }`}
-                    >
-                      {surah.surahNameTranslation}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-1 text-xs">
-                    <Hash className="w-3 h-3" />
-                    <span>{surah.totalAyah} verses</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content - Surah Verses */}
+        {/* Main Content */}
         <main
-          className={`flex-1 ${
-            isDarkMode ? "bg-gray-900" : "bg-gray-50"
-          } min-h-screen`}
-        >
-          {currentSurah && (
-            <div className="max-w-4xl mx-auto p-6">
-              {/* Surah Header */}
-              <div
-                className={`${
-                  isDarkMode ? "bg-gray-800" : "bg-white"
-                } rounded-xl p-6 mb-6 shadow-sm`}
-              >
-                <div className="text-center">
-                  <div
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                      isDarkMode
-                        ? "bg-emerald-600"
-                        : "bg-emerald-100 text-emerald-800"
-                    } text-sm font-medium mb-4`}
-                  >
-                    <span>Surah {selectedSurah}</span>
-                    <span>•</span>
-                    <span>{currentSurah.revelationPlace}</span>
-                  </div>
-
-                  <h1
-                    className={`text-3xl font-bold mb-2 ${
-                      isDarkMode ? "text-white" : "text-gray-800"
-                    }`}
-                  >
-                    {currentSurah.surahName}
-                  </h1>
-
-                  <p
-                    className={`text-4xl font-arabic mb-3 ${
-                      isDarkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
-                    dir="rtl"
-                  >
-                    {currentSurah.surahNameArabicLong}
-                  </p>
-
-                  <p
-                    className={`text-lg ${
-                      isDarkMode ? "text-gray-300" : "text-gray-600"
-                    } mb-4`}
-                  >
-                    {currentSurah.surahNameTranslation}
-                  </p>
-
-                  <div
-                    className={`text-sm ${
-                      isDarkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  >
-                    {currentSurah.totalAyah} verses • Revealed in{" "}
-                    {currentSurah.revelationPlace}
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation */}
-              <div className="flex justify-between items-center mb-6">
-                <button
-                  disabled={selectedSurah === 1}
-                  onClick={() => setSelectedSurah(selectedSurah - 1)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    selectedSurah === 1
-                      ? "opacity-50 cursor-not-allowed"
-                      : isDarkMode
-                      ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous Surah
-                </button>
-
-                <button
-                  disabled={selectedSurah === mockSurahs.length}
-                  onClick={() => setSelectedSurah(selectedSurah + 1)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    selectedSurah === mockSurahs.length
-                      ? "opacity-50 cursor-not-allowed"
-                      : isDarkMode
-                      ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  Next Surah
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Verses */}
-              <div className="space-y-6">
-                {currentVerses.length > 0 ? (
-                  currentVerses.map((verse: any) => (
-                    <div
-                      key={verse.ayahNumber}
-                      className={`${
-                        isDarkMode ? "bg-gray-800" : "bg-white"
-                      } rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow`}
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div
-                          className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                            isDarkMode
-                              ? "bg-emerald-600"
-                              : "bg-emerald-100 text-emerald-800"
-                          } text-sm font-bold`}
-                        >
-                          {verse.ayahNumber}
-                        </div>
-                        <button
-                          className={`p-2 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 ${
-                            isDarkMode ? "text-gray-400" : "text-gray-500"
-                          }`}
-                        >
-                          <Play className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="text-right mb-4" dir="rtl">
-                        <p
-                          className={`font-arabic leading-loose ${
-                            isDarkMode ? "text-white" : "text-gray-800"
-                          }`}
-                          style={{ fontSize: `${fontSize + 8}px` }}
-                        >
-                          {verse.arabicText}
-                        </p>
-                      </div>
-
-                      <div className="border-t border-gray-200 pt-4">
-                        <p
-                          className={`leading-relaxed ${
-                            isDarkMode ? "text-gray-300" : "text-gray-700"
-                          }`}
-                          style={{ fontSize: `${fontSize}px` }}
-                        >
-                          {verse.translation}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div
-                    className={`${
-                      isDarkMode ? "bg-gray-800" : "bg-white"
-                    } rounded-xl p-12 text-center shadow-sm`}
-                  >
-                    <BookOpen
-                      className={`w-12 h-12 mx-auto mb-4 ${
-                        isDarkMode ? "text-gray-600" : "text-gray-400"
-                      }`}
-                    />
-                    <p
-                      className={`text-lg ${
-                        isDarkMode ? "text-gray-400" : "text-gray-600"
-                      }`}
-                    >
-                      Verses will be loaded here
-                    </p>
-                    <p
-                      className={`text-sm ${
-                        isDarkMode ? "text-gray-500" : "text-gray-500"
-                      } mt-2`}
-                    >
-                      Connect your Redux store to display the verses
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+          className={cn(
+            "flex-1 min-h-[calc(100vh-4rem)] transition-all duration-300",
+            isSidebarOpen ? "lg:ml-0" : "lg:ml-0"
           )}
+        >
+          <div className="container mx-auto px-4 py-6 max-w-4xl">
+            {React.Children.map(children, (child) =>
+              React.isValidElement(child)
+                ? React.cloneElement(child as React.ReactElement<any>, {
+                    fontSize: fontSize[0],
+                    isPlaying,
+                    onPlayPause: togglePlayPause,
+                  })
+                : child
+            )}
+          </div>
         </main>
       </div>
-
-      <style jsx>{`
-        .font-arabic {
-          font-family: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif;
-        }
-      `}</style>
     </div>
   );
 };
-
-export default QuranLayout;
