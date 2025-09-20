@@ -1,300 +1,271 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import {
-  Play,
-  Bookmark,
-  Share2,
-  MoreHorizontal,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
+import VerseDisplay from "@/components/Pages/Surah/VerseDisplay";
 
-// Types
+// Mock data - replace with your actual data source/API calls
+const mockSurahs = [
+  {
+    id: 1,
+    name: "Al-Faatiha",
+    nameArabic: "الفاتحة",
+    nameTranslation: "The Opening",
+    revelationPlace: "Mecca" as const,
+    totalVerses: 7,
+  },
+  {
+    id: 2,
+    name: "Al-Baqara",
+    nameArabic: "البقرة",
+    nameTranslation: "The Cow",
+    revelationPlace: "Madina" as const,
+    totalVerses: 286,
+  },
+  {
+    id: 3,
+    name: "Aal-i-Imraan",
+    nameArabic: "آل عمران",
+    nameTranslation: "The Family of Imraan",
+    revelationPlace: "Madina" as const,
+    totalVerses: 200,
+  },
+  {
+    id: 4,
+    name: "An-Nisaa",
+    nameArabic: "النساء",
+    nameTranslation: "The Women",
+    revelationPlace: "Madina" as const,
+    totalVerses: 176,
+  },
+  {
+    id: 5,
+    name: "Al-Maida",
+    nameArabic: "المائدة",
+    nameTranslation: "The Table",
+    revelationPlace: "Madina" as const,
+    totalVerses: 120,
+  },
+];
+
+// Mock verses data - replace with your actual API
+const mockVerses: Record<number, any[]> = {
+  1: [
+    {
+      number: 1,
+      arabicText: "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ",
+      translation:
+        "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+      transliteration: "Bismillah ir-Rahman ir-Raheem",
+    },
+    {
+      number: 2,
+      arabicText: "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَـٰلَمِینَ",
+      translation: "Praise is due to Allah, Lord of the worlds.",
+      transliteration: "Alhamdulillahi rabbil alameen",
+    },
+    {
+      number: 3,
+      arabicText: "ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ",
+      translation: "The Entirely Merciful, the Especially Merciful.",
+      transliteration: "Ar-Rahman ir-Raheem",
+    },
+    {
+      number: 4,
+      arabicText: "مَـٰلِكِ یَوۡمِ ٱلدِّینِ",
+      translation: "Sovereign of the Day of Recompense.",
+      transliteration: "Maliki yawmid deen",
+    },
+    {
+      number: 5,
+      arabicText: "إِیَّاكَ نَعۡبُدُ وَإِیَّاكَ نَسۡتَعِینُ",
+      translation: "It is You we worship and You we ask for help.",
+      transliteration: "Iyyaka na'budu wa iyyaka nasta'een",
+    },
+    {
+      number: 6,
+      arabicText: "ٱهۡدِنَا ٱلصِّرَ ٰ⁠طَ ٱلۡمُسۡتَقِیمَ",
+      translation: "Guide us to the straight path -",
+      transliteration: "Ihdinassiratal mustaqeem",
+    },
+    {
+      number: 7,
+      arabicText:
+        "صِرَ ٰ⁠طَ ٱلَّذِینَ أَنۡعَمۡتَ عَلَیۡهِمۡ غَیۡرِ ٱلۡمَغۡضُوبِ عَلَیۡهِمۡ وَلَا ٱلضَّاۤلِّینَ",
+      translation:
+        "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.",
+      transliteration:
+        "Siratal lazeena an'amta alaihim ghairil maghdubi alaihim waladdaaleen",
+    },
+  ],
+  2: [
+    {
+      number: 1,
+      arabicText: "الٓمٓ",
+      translation: "Alif, Lam, Meem.",
+      transliteration: "Alif Lam Meem",
+    },
+    {
+      number: 2,
+      arabicText:
+        "ذَ ٰ⁠لِكَ ٱلۡكِتَـٰبُ لَا رَیۡبَ ۛ فِیهِ ۛ هُدࣰى لِّلۡمُتَّقِینَ",
+      translation:
+        "This is the Book about which there is no doubt, a guidance for those conscious of Allah -",
+      transliteration: "Zalikal kitabu la raiba feeh, hudal lil muttaqeen",
+    },
+    // Add more verses as needed...
+  ],
+};
+
 interface Surah {
   id: number;
   name: string;
-  englishName: string;
-  ayahCount: number;
-  revelationType: "Makkah" | "Madinah";
+  nameArabic: string;
+  nameTranslation: string;
+  revelationPlace: "Mecca" | "Madina";
+  totalVerses: number;
 }
 
 interface Verse {
   number: number;
-  arabic: string;
+  arabicText: string;
   translation: string;
+  transliteration?: string;
 }
 
-interface SurahPageProps {
-  params: {
-    id: string;
+const SurahPage: React.FC<{
+  fontSize?: number;
+  isPlaying?: boolean;
+  onPlayPause?: () => void;
+}> = ({ fontSize = 18, isPlaying = false, onPlayPause }) => {
+  const params = useParams();
+  const router = useRouter();
+  // const { toast } = useToast();
+
+  const [versesLoading, setVersesLoading] = useState(true);
+  const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(
+    null
+  );
+  const [bookmarkedVerses, setBookmarkedVerses] = useState<number[]>([]);
+
+  const surahId = parseInt(params.id as string);
+
+  // Find current surah and verses
+  const currentSurah = mockSurahs.find((s) => s.id === surahId) || null;
+  const verses = mockVerses[surahId] || [];
+
+  // Redirect if surah doesn't exist
+  useEffect(() => {
+    if (!currentSurah && !versesLoading) {
+      notFound();
+    }
+  }, [currentSurah, versesLoading]);
+
+  // Load bookmarks from localStorage
+  useEffect(() => {
+    if (surahId) {
+      const saved = localStorage.getItem(`bookmarks-${surahId}`);
+      if (saved) {
+        try {
+          setBookmarkedVerses(JSON.parse(saved));
+        } catch (error) {
+          console.error("Error loading bookmarks:", error);
+        }
+      }
+    }
+  }, [surahId]);
+
+  // Simulate loading verses
+  useEffect(() => {
+    setVersesLoading(true);
+    const timer = setTimeout(() => {
+      setVersesLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [surahId]);
+
+  // Navigation handlers
+  const handleNavigation = (direction: "prev" | "next") => {
+    const currentIndex = mockSurahs.findIndex((s) => s.id === surahId);
+    let newIndex: number;
+
+    if (direction === "prev") {
+      newIndex = Math.max(0, currentIndex - 1);
+    } else {
+      newIndex = Math.min(mockSurahs.length - 1, currentIndex + 1);
+    }
+
+    if (
+      newIndex !== currentIndex &&
+      newIndex >= 0 &&
+      newIndex < mockSurahs.length
+    ) {
+      const newSurahId = mockSurahs[newIndex].id;
+      router.push(`/surah/${newSurahId}`);
+    }
   };
-}
 
-interface SurahHeaderProps {
-  surah: Surah;
-}
+  // Audio handlers
+  const handlePlayPause = (verseNumber: number) => {
+    if (currentPlayingVerse === verseNumber) {
+      // Stop current verse
+      setCurrentPlayingVerse(null);
+      // toast({
+      //   title: "Audio paused",
+      //   description: `Surah ${currentSurah?.name}, verse ${verseNumber}`,
+      // });
+    } else {
+      // Play new verse
+      setCurrentPlayingVerse(verseNumber);
+      // toast({
+      //   title: "Playing audio",
+      //   description: `Surah ${currentSurah?.name}, verse ${verseNumber}`,
+      // });
 
-interface VerseCardProps {
-  verse: Verse;
-  isFirstVerse: boolean;
-}
+      // TODO: Implement actual audio playback
+      // Example: playAudio(surahId, verseNumber);
+    }
+  };
 
-interface NavigationFooterProps {
-  currentSurah: Surah;
-}
+  // Bookmark handlers
+  const handleBookmarkToggle = (verseNumber: number) => {
+    const newBookmarks = bookmarkedVerses.includes(verseNumber)
+      ? bookmarkedVerses.filter((v) => v !== verseNumber)
+      : [...bookmarkedVerses, verseNumber];
 
-// Sample Surah data - you can move this to a separate data file or API
-const surahs: Surah[] = [
-  {
-    id: 1,
-    name: "Al Fatihah",
-    englishName: "The Opener",
-    ayahCount: 7,
-    revelationType: "Makkah",
-  },
-  {
-    id: 2,
-    name: "Al Baqarah",
-    englishName: "The Cow",
-    ayahCount: 286,
-    revelationType: "Madinah",
-  },
-  {
-    id: 3,
-    name: "Al Imran",
-    englishName: "Family of Imran",
-    ayahCount: 200,
-    revelationType: "Madinah",
-  },
-  {
-    id: 4,
-    name: "An Nisa",
-    englishName: "The Women",
-    ayahCount: 176,
-    revelationType: "Madinah",
-  },
-  {
-    id: 5,
-    name: "Al Ma'idah",
-    englishName: "The Table Spread",
-    ayahCount: 120,
-    revelationType: "Madinah",
-  },
-];
+    setBookmarkedVerses(newBookmarks);
+    localStorage.setItem(`bookmarks-${surahId}`, JSON.stringify(newBookmarks));
 
-// Sample verses for Al Fatihah
-const versesData: Record<number, Verse[]> = {
-  1: [
-    {
-      number: 1,
-      arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-      translation:
-        "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
-    },
-    {
-      number: 2,
-      arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-      translation: "All praise is due to Allah, Lord of the worlds.",
-    },
-    {
-      number: 3,
-      arabic: "الرَّحْمَٰنِ الرَّحِيمِ",
-      translation: "The Entirely Merciful, the Especially Merciful.",
-    },
-    {
-      number: 4,
-      arabic: "مَالِكِ يَوْمِ الدِّينِ",
-      translation: "Sovereign of the Day of Recompense.",
-    },
-    {
-      number: 5,
-      arabic: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-      translation: "It is You we worship and You we ask for help.",
-    },
-    {
-      number: 6,
-      arabic: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
-      translation: "Guide us to the straight path.",
-    },
-    {
-      number: 7,
-      arabic:
-        "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
-      translation:
-        "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.",
-    },
-  ],
-};
+    // toast({
+    //   title: bookmarkedVerses.includes(verseNumber)
+    //     ? "Bookmark removed"
+    //     : "Verse bookmarked",
+    //   description: `Surah ${currentSurah?.name}, verse ${verseNumber}`,
+    // });
+  };
 
-const SurahHeader = ({ surah }: SurahHeaderProps) => (
-  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-8 rounded-lg mb-6">
-    <div className="flex items-center justify-between mb-4">
-      <h1 className="text-3xl font-bold">Surah {surah.name}</h1>
-      <div className="flex items-center space-x-2">
-        <button className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
-          <Play className="w-5 h-5" />
-        </button>
-        <button className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
-          <Bookmark className="w-5 h-5" />
-        </button>
-        <button className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
-          <Share2 className="w-5 h-5" />
-        </button>
-        <button className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors">
-          <MoreHorizontal className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
-    <p className="text-green-100 mb-2">
-      Ayah-{surah.ayahCount}, {surah.revelationType}
-    </p>
-    <div className="text-sm text-green-100">SAHEEH INTERNATIONAL</div>
-  </div>
-);
-
-const VerseCard = ({ verse, isFirstVerse }: VerseCardProps) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition-shadow">
-    <div className="flex items-start justify-between mb-4">
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full text-sm font-medium">
-          {verse.number}
-        </div>
-        {isFirstVerse && (
-          <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            SAHEEH INTERNATIONAL
-          </div>
-        )}
-      </div>
-      <div className="flex items-center space-x-2">
-        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-          <Play className="w-4 h-4" />
-        </button>
-        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-          <Bookmark className="w-4 h-4" />
-        </button>
-        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-          <Share2 className="w-4 h-4" />
-        </button>
-        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-
-    <div className="text-right mb-4">
-      <p
-        className="text-2xl leading-relaxed font-arabic"
-        style={{ fontFamily: "Arabic, serif" }}
-      >
-        {verse.arabic}
-      </p>
-    </div>
-
-    <p className="text-gray-700 leading-relaxed">{verse.translation}</p>
-  </div>
-);
-
-const NavigationFooter = ({ currentSurah }: NavigationFooterProps) => {
-  const prevSurah = surahs.find((s) => s.id === currentSurah.id - 1);
-  const nextSurah = surahs.find((s) => s.id === currentSurah.id + 1);
+  // Navigation constraints
+  const canNavigatePrev = surahId > 1;
+  const canNavigateNext = surahId < mockSurahs.length;
 
   return (
-    <div className="flex items-center justify-between py-6 border-t border-gray-200 mt-8">
-      {prevSurah ? (
-        <Link
-          href={`/surah/${prevSurah.id}`}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-green-600 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>{prevSurah.name}</span>
-        </Link>
-      ) : (
-        <div className="flex items-center space-x-2 px-4 py-2 text-gray-300">
-          <ChevronLeft className="w-4 h-4" />
-          <span>Previous</span>
-        </div>
-      )}
-
-      <div className="text-sm text-gray-500">
-        Surah {currentSurah.id} of 114
-      </div>
-
-      {nextSurah ? (
-        <Link
-          href={`/surah/${nextSurah.id}`}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-green-600 transition-colors"
-        >
-          <span>{nextSurah.name}</span>
-          <ChevronRight className="w-4 h-4" />
-        </Link>
-      ) : (
-        <div className="flex items-center space-x-2 px-4 py-2 text-gray-300">
-          <span>Next</span>
-          <ChevronRight className="w-4 h-4" />
-        </div>
-      )}
-    </div>
+    <VerseDisplay
+      surah={currentSurah}
+      verses={verses}
+      isLoading={versesLoading}
+      fontSize={fontSize}
+      isPlaying={currentPlayingVerse !== null}
+      currentPlayingVerse={currentPlayingVerse}
+      onPlayPause={handlePlayPause}
+      onNavigate={handleNavigation}
+      canNavigatePrev={canNavigatePrev}
+      canNavigateNext={canNavigateNext}
+      bookmarkedVerses={bookmarkedVerses}
+      onBookmarkToggle={handleBookmarkToggle}
+    />
   );
 };
 
-export default function SurahPage({ params }: SurahPageProps) {
-  const surahId = parseInt(params.id);
-  const surah = surahs.find((s) => s.id === surahId);
-  const verses = versesData[surahId] || [];
-
-  if (!surah) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Surah Not Found
-          </h1>
-          <p className="text-gray-600">
-            The requested surah could not be found.
-          </p>
-          <Link
-            href="/surah/1"
-            className="inline-block mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            Go to Al Fatihah
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <SurahHeader surah={surah} />
-
-      <div className="space-y-4">
-        {verses.length > 0 ? (
-          verses.map((verse, index) => (
-            <VerseCard
-              key={verse.number}
-              verse={verse}
-              isFirstVerse={index === 0}
-            />
-          ))
-        ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Search className="w-16 h-16 mx-auto" />
-            </div>
-            <p className="text-gray-500 text-lg">
-              Verses for {surah.name} coming soon...
-            </p>
-            <p className="text-gray-400 text-sm mt-2">
-              Currently only Al Fatihah is available in this demo
-            </p>
-          </div>
-        )}
-      </div>
-
-      <NavigationFooter currentSurah={surah} />
-    </div>
-  );
-}
+export default SurahPage;
