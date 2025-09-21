@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Search,
   BookOpen,
   MapPin,
   Hash,
-  ChevronLeft,
   ChevronRight,
   X,
   Menu,
@@ -21,18 +20,15 @@ import { cn } from "@/lib/utils";
 
 interface Surah {
   id: number;
-  surahName: string;
-  surahNameArabic: string;
-  surahNameArabicLong: string;
-  surahNameTranslation: string;
-  revelationPlace: string;
-  totalAyah: number;
+  name: string;
+  nameArabic: string;
+  nameTranslation: string;
+  revelationPlace: "Mecca" | "Madina";
+  totalVerses: number;
 }
 
 interface SidebarProps {
   surahs: Surah[];
-  selectedSurahId: number;
-  onSurahSelect: (surahId: number) => void;
   isOpen: boolean;
   onToggle: () => void;
   isLoading?: boolean;
@@ -43,15 +39,18 @@ const SidebarSkeleton = () => (
   <div className="p-4 space-y-4">
     <Skeleton className="h-10 w-full" />
     {Array.from({ length: 8 }).map((_, i) => (
-      <div key={i} className="space-y-2 p-4 rounded-lg border">
+      <div key={i} className="space-y-3 p-4 rounded-xl border">
         <div className="flex justify-between items-start">
-          <Skeleton className="h-4 w-8" />
-          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-5 w-16" />
         </div>
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-6 w-full" />
         <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-3 w-20" />
+        <div className="flex justify-between items-center pt-2 border-t">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-4 w-4" />
+        </div>
       </div>
     ))}
   </div>
@@ -72,16 +71,17 @@ const SurahCard = ({
       "w-full text-left p-4 rounded-xl border transition-all duration-200 hover:shadow-md group",
       isSelected
         ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 shadow-sm"
-        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+        : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750"
     )}
   >
+    {/* Header */}
     <div className="flex justify-between items-start mb-3">
       <div
         className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold",
+          "flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold transition-colors",
           isSelected
             ? "bg-emerald-600 text-white"
-            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 group-hover:bg-emerald-100 group-hover:text-emerald-600"
+            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 group-hover:bg-emerald-100 group-hover:text-emerald-600 dark:group-hover:bg-emerald-900"
         )}
       >
         {surah.id}
@@ -89,9 +89,9 @@ const SurahCard = ({
       <Badge
         variant={isSelected ? "default" : "secondary"}
         className={cn(
-          "text-xs",
+          "text-xs font-medium",
           isSelected
-            ? "bg-emerald-600 hover:bg-emerald-700"
+            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
             : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
         )}
       >
@@ -100,6 +100,7 @@ const SurahCard = ({
       </Badge>
     </div>
 
+    {/* Content */}
     <div className="space-y-2">
       <h3
         className={cn(
@@ -109,7 +110,7 @@ const SurahCard = ({
             : "text-gray-900 dark:text-gray-100"
         )}
       >
-        {surah.surahName}
+        {surah.name}
       </h3>
 
       <p
@@ -120,9 +121,8 @@ const SurahCard = ({
             : "text-gray-700 dark:text-gray-300"
         )}
         dir="rtl"
-        style={{ fontFamily: "Amiri, 'Noto Naskh Arabic', serif" }}
       >
-        {surah.surahNameArabic}
+        {surah.nameArabic}
       </p>
 
       <p
@@ -133,19 +133,20 @@ const SurahCard = ({
             : "text-gray-600 dark:text-gray-400"
         )}
       >
-        {surah.surahNameTranslation}
+        {surah.nameTranslation}
       </p>
     </div>
 
+    {/* Footer */}
     <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-600">
       <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
         <Hash className="w-3 h-3" />
-        <span>{surah.totalAyah} verses</span>
+        <span>{surah.totalVerses} verses</span>
       </div>
 
       <ChevronRight
         className={cn(
-          "w-4 h-4 transition-transform group-hover:translate-x-1",
+          "w-4 h-4 transition-all duration-200 group-hover:translate-x-1",
           isSelected
             ? "text-emerald-600"
             : "text-gray-400 group-hover:text-emerald-600"
@@ -157,24 +158,32 @@ const SurahCard = ({
 
 const SurahSidebar: React.FC<SidebarProps> = ({
   surahs,
-  selectedSurahId,
-  onSurahSelect,
   isOpen,
   onToggle,
   isLoading = false,
   className,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
 
+  // Get current surah ID from pathname
+  const currentSurahId = pathname.startsWith("/surah/")
+    ? parseInt(pathname.split("/")[2])
+    : null;
+
+  // Filter surahs based on search
   const filteredSurahs = surahs.filter(
     (surah) =>
-      surah.surahName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      surah.surahNameTranslation
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      surah.surahNameArabic.includes(searchQuery) ||
+      surah.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      surah.nameTranslation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      surah.nameArabic.includes(searchQuery) ||
       surah.id.toString().includes(searchQuery)
   );
+
+  const handleSurahSelect = (surahId: number) => {
+    router.push(`/surah/${surahId}`);
+  };
 
   return (
     <>
@@ -191,22 +200,22 @@ const SurahSidebar: React.FC<SidebarProps> = ({
         className={cn(
           "fixed lg:sticky top-0 left-0 h-screen z-50 transition-all duration-300 ease-in-out",
           "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800",
-          "flex flex-col",
+          "flex flex-col shadow-xl lg:shadow-none",
           isOpen
             ? "translate-x-0 w-96"
-            : "-translate-x-full lg:translate-x-0 lg:w-16",
+            : "-translate-x-full lg:translate-x-0 lg:w-20",
           className
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <div
             className={cn(
               "flex items-center gap-3",
               !isOpen && "lg:justify-center"
             )}
           >
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900 ring-2 ring-emerald-200 dark:ring-emerald-800">
               <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             {isOpen && (
@@ -225,7 +234,10 @@ const SurahSidebar: React.FC<SidebarProps> = ({
             variant="ghost"
             size="sm"
             onClick={onToggle}
-            className={cn("h-8 w-8 p-0", !isOpen && "lg:hidden")}
+            className={cn(
+              "h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800",
+              !isOpen && "lg:hidden"
+            )}
           >
             {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
@@ -235,7 +247,7 @@ const SurahSidebar: React.FC<SidebarProps> = ({
         {isOpen && (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Search */}
-            <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -243,19 +255,19 @@ const SurahSidebar: React.FC<SidebarProps> = ({
                   placeholder="Search surahs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-10 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  className="pl-9 h-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
 
               {searchQuery && (
                 <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  {filteredSurahs.length} of {surahs.length} surahs
+                  {filteredSurahs.length} of {surahs.length} surahs found
                 </div>
               )}
             </div>
 
             {/* Surah List */}
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 bg-gray-50 dark:bg-gray-900">
               <div className="p-4 space-y-3">
                 {isLoading ? (
                   <SidebarSkeleton />
@@ -264,8 +276,8 @@ const SurahSidebar: React.FC<SidebarProps> = ({
                     <SurahCard
                       key={surah.id}
                       surah={surah}
-                      isSelected={selectedSurahId === surah.id}
-                      onClick={() => onSurahSelect(surah.id)}
+                      isSelected={currentSurahId === surah.id}
+                      onClick={() => handleSurahSelect(surah.id)}
                     />
                   ))
                 ) : (
@@ -275,7 +287,7 @@ const SurahSidebar: React.FC<SidebarProps> = ({
                       No surahs found
                     </p>
                     <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                      Try adjusting your search
+                      Try adjusting your search query
                     </p>
                   </div>
                 )}
@@ -284,20 +296,27 @@ const SurahSidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* Collapsed Toggle Button */}
+        {/* Collapsed State - Show Toggle */}
         {!isOpen && (
-          <div className="p-4">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             <Button
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="w-full h-10 justify-center"
+              className="w-full h-10 justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         )}
       </aside>
+
+      {/* Add Arabic font styles */}
+      <style jsx>{`
+        .font-arabic {
+          font-family: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif;
+        }
+      `}</style>
     </>
   );
 };
