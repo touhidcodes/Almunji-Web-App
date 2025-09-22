@@ -1,19 +1,5 @@
 import React from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import {
   TrendingUp,
   Users,
   DollarSign,
@@ -22,7 +8,6 @@ import {
   Calendar,
   Bell,
   Settings,
-  LucideProps,
 } from "lucide-react";
 
 const Overview = () => {
@@ -43,11 +28,12 @@ const Overview = () => {
     { name: "Support", value: 200, color: "#f59e0b" },
   ];
 
-  type TStarCard = {
-    icon: LucideProps;
+  // Fixed type definition
+  type StatCardProps = {
+    icon: React.ComponentType<{ className?: string }>;
     title: string;
     value: string;
-    change: () => void;
+    change: string; // Fixed: was incorrectly defined as function
     changeType: string;
   };
 
@@ -57,7 +43,7 @@ const Overview = () => {
     value,
     change,
     changeType,
-  }: TStarCard) => (
+  }: StatCardProps) => (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
       <div className="flex items-center justify-between">
         <div>
@@ -78,6 +64,158 @@ const Overview = () => {
       </div>
     </div>
   );
+
+  // Simple chart components without recharts dependency
+  const SimpleLineChart = ({ data }: { data: typeof monthlyData }) => (
+    <div className="h-300 relative">
+      <svg className="w-full h-64" viewBox="0 0 400 200">
+        <defs>
+          <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Grid lines */}
+        {[0, 1, 2, 3, 4].map((i) => (
+          <line
+            key={i}
+            x1="50"
+            y1={40 + i * 30}
+            x2="350"
+            y2={40 + i * 30}
+            stroke="#f0f0f0"
+            strokeWidth="1"
+            strokeDasharray="3,3"
+          />
+        ))}
+
+        {/* Data points and line */}
+        <polyline
+          fill="none"
+          stroke="#8b5cf6"
+          strokeWidth="3"
+          points={data
+            .map((d, i) => `${50 + i * 50},${170 - d.revenue / 100}`)
+            .join(" ")}
+        />
+
+        {/* Data points */}
+        {data.map((d, i) => (
+          <circle
+            key={i}
+            cx={50 + i * 50}
+            cy={170 - d.revenue / 100}
+            r="4"
+            fill="#8b5cf6"
+          />
+        ))}
+
+        {/* Labels */}
+        {data.map((d, i) => (
+          <text
+            key={i}
+            x={50 + i * 50}
+            y="190"
+            textAnchor="middle"
+            fontSize="12"
+            fill="#666"
+          >
+            {d.month}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+
+  const SimpleBarChart = ({ data }: { data: typeof monthlyData }) => (
+    <div className="h-300 relative">
+      <svg className="w-full h-64" viewBox="0 0 400 200">
+        {/* Grid lines */}
+        {[0, 1, 2, 3, 4].map((i) => (
+          <line
+            key={i}
+            x1="50"
+            y1={40 + i * 30}
+            x2="350"
+            y2={40 + i * 30}
+            stroke="#f0f0f0"
+            strokeWidth="1"
+            strokeDasharray="3,3"
+          />
+        ))}
+
+        {/* Bars */}
+        {data.map((d, i) => (
+          <rect
+            key={i}
+            x={40 + i * 50}
+            y={170 - d.users / 10}
+            width="20"
+            height={d.users / 10}
+            fill="#06b6d4"
+            rx="2"
+          />
+        ))}
+
+        {/* Labels */}
+        {data.map((d, i) => (
+          <text
+            key={i}
+            x={50 + i * 50}
+            y="190"
+            textAnchor="middle"
+            fontSize="12"
+            fill="#666"
+          >
+            {d.month}
+          </text>
+        ))}
+      </svg>
+    </div>
+  );
+
+  const SimplePieChart = ({ data }: { data: typeof categoryData }) => {
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    let currentAngle = 0;
+
+    return (
+      <div className="flex justify-center">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle
+            cx="80"
+            cy="80"
+            r="30"
+            fill="none"
+            stroke="#f3f4f6"
+            strokeWidth="20"
+          />
+          {data.map((item, index) => {
+            const angle = (item.value / total) * 360;
+            const startAngle = currentAngle;
+            currentAngle += angle;
+
+            const x1 = 80 + 30 * Math.cos(((startAngle - 90) * Math.PI) / 180);
+            const y1 = 80 + 30 * Math.sin(((startAngle - 90) * Math.PI) / 180);
+            const x2 =
+              80 + 30 * Math.cos(((startAngle + angle - 90) * Math.PI) / 180);
+            const y2 =
+              80 + 30 * Math.sin(((startAngle + angle - 90) * Math.PI) / 180);
+
+            const largeArcFlag = angle > 180 ? 1 : 0;
+
+            return (
+              <path
+                key={index}
+                d={`M 80 80 L ${x1} ${y1} A 30 30 0 ${largeArcFlag} 1 ${x2} ${y2} Z`}
+                fill={item.color}
+              />
+            );
+          })}
+        </svg>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -143,27 +281,7 @@ const Overview = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Revenue Trends
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#8b5cf6"
-                  strokeWidth={3}
-                  dot={{ fill: "#8b5cf6", strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <SimpleLineChart data={monthlyData} />
           </div>
 
           {/* User Growth Chart */}
@@ -171,21 +289,7 @@ const Overview = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               User Growth
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#666" />
-                <YAxis stroke="#666" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Bar dataKey="users" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <SimpleBarChart data={monthlyData} />
           </div>
         </div>
 
@@ -196,24 +300,7 @@ const Overview = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Category Distribution
             </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <SimplePieChart data={categoryData} />
             <div className="mt-4 space-y-2">
               {categoryData.map((item, index) => (
                 <div key={index} className="flex items-center justify-between">
