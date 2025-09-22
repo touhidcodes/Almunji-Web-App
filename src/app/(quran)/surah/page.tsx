@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 
-const QuranSurahDisplay = () => {
+const SurahPage = () => {
   const [selectedTab, setSelectedTab] = useState("Surah");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Ascending");
@@ -10,7 +10,7 @@ const QuranSurahDisplay = () => {
   const surahs = [
     {
       id: 1,
-      number: "01",
+      number: "01",s
       name: "Al-Fatihah",
       arabicName: "الفاتحة",
       englishName: "The Opener",
@@ -235,4 +235,4 @@ const QuranSurahDisplay = () => {
   );
 };
 
-export default QuranSurahDisplay;
+export default SurahPage;
