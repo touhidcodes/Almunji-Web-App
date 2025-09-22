@@ -5,7 +5,6 @@ import {
   Trash2,
   Plus,
   Search,
-  Filter,
   Play,
   Star,
   Clock,
@@ -15,7 +14,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-// Import shadcn/ui components
+// shadcn/ui components
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,8 +29,57 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 
-const QuranBookmarkDashboard = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+/* -------------------- TYPES -------------------- */
+interface Surah {
+  id: number;
+  name: string;
+  arabicName: string;
+  chapter: number;
+  verses: number;
+  progress: number;
+  lastRead: string;
+  isFavorite: boolean;
+}
+
+interface Ayah {
+  id: string;
+  title: string;
+  surah: string;
+  reference: string;
+  arabicText: string;
+  translation: string;
+  tags: string[];
+  savedDate: string;
+}
+
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  progress: number;
+  totalChapters: number;
+  currentChapter: number;
+  lastRead: string;
+  cover: string;
+}
+
+interface Dua {
+  id: string;
+  title: string;
+  arabicText: string;
+  transliteration: string;
+  translation: string;
+  category: string;
+  frequency: string;
+  isFavorite: boolean;
+}
+
+type BookmarkType = "surah" | "ayah" | "book" | "dua";
+
+/* -------------------- COMPONENT -------------------- */
+const QuranBookmarkDashboard: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Sample bookmark data
   const bookmarkData = {
@@ -66,7 +114,7 @@ const QuranBookmarkDashboard = () => {
         lastRead: "3 days ago",
         isFavorite: true,
       },
-    ],
+    ] as Surah[],
     ayahs: [
       {
         id: "2:255",
@@ -90,7 +138,7 @@ const QuranBookmarkDashboard = () => {
         tags: ["comfort", "guidance"],
         savedDate: "Jan 12, 2024",
       },
-    ],
+    ] as Ayah[],
     books: [
       {
         id: "sahih-bukhari",
@@ -125,7 +173,7 @@ const QuranBookmarkDashboard = () => {
         lastRead: "2 days ago",
         cover: "🏛️",
       },
-    ],
+    ] as Book[],
     duas: [
       {
         id: "morning-dhikr",
@@ -162,10 +210,9 @@ const QuranBookmarkDashboard = () => {
         frequency: "Anytime",
         isFavorite: true,
       },
-    ],
+    ] as Dua[],
   };
 
-  // Calculate total stats
   const totalStats = {
     surahs: bookmarkData.surahs.length,
     ayahs: bookmarkData.ayahs.length,
@@ -178,17 +225,22 @@ const QuranBookmarkDashboard = () => {
       bookmarkData.duas.length,
   };
 
-  const handleRemoveBookmark = (type, id) => {
+  const handleRemoveBookmark = (type: BookmarkType, id: string | number) => {
     console.log(`Removing ${type} bookmark: ${id}`);
-    // Implementation for removing bookmark
   };
 
-  const handleReadBookmark = (type, id) => {
+  const handleReadBookmark = (type: BookmarkType, id: string | number) => {
     console.log(`Reading ${type}: ${id}`);
-    // Implementation for opening bookmark content
   };
 
-  const StatCard = ({ icon, title, value, subtitle, trend }) => (
+  /* -------------------- SUB COMPONENTS -------------------- */
+  const StatCard: React.FC<{
+    icon: React.ReactNode;
+    title: string;
+    value: number;
+    subtitle: string;
+    trend?: boolean;
+  }> = ({ icon, title, value, subtitle, trend }) => (
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -208,7 +260,7 @@ const QuranBookmarkDashboard = () => {
     </Card>
   );
 
-  const SurahCard = ({ surah }) => (
+  const SurahCard: React.FC<{ surah: Surah }> = ({ surah }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -258,7 +310,7 @@ const QuranBookmarkDashboard = () => {
     </Card>
   );
 
-  const AyahCard = ({ ayah }) => (
+  const AyahCard: React.FC<{ ayah: Ayah }> = ({ ayah }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -309,7 +361,7 @@ const QuranBookmarkDashboard = () => {
     </Card>
   );
 
-  const BookCard = ({ book }) => (
+  const BookCard: React.FC<{ book: Book }> = ({ book }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader>
         <div className="flex items-start gap-3">
@@ -360,7 +412,7 @@ const QuranBookmarkDashboard = () => {
     </Card>
   );
 
-  const DuaCard = ({ dua }) => (
+  const DuaCard: React.FC<{ dua: Dua }> = ({ dua }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -408,6 +460,7 @@ const QuranBookmarkDashboard = () => {
     </Card>
   );
 
+  /* -------------------- RENDER -------------------- */
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
@@ -431,7 +484,9 @@ const QuranBookmarkDashboard = () => {
                 <Input
                   placeholder="Search bookmarks..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSearchQuery(e.target.value)
+                  }
                   className="pl-10 w-64"
                 />
               </div>
