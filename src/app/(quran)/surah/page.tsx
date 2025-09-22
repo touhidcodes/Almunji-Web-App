@@ -6,11 +6,10 @@ const SurahPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Ascending");
 
-  // Sample Surah data - in a real app, this would come from an API
   const surahs = [
     {
       id: 1,
-      number: "01",s
+      number: "01",
       name: "Al-Fatihah",
       arabicName: "الفاتحة",
       englishName: "The Opener",
