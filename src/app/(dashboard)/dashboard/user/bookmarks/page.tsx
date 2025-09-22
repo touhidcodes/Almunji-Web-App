@@ -29,7 +29,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 
-/* -------------------- TYPES -------------------- */
 interface Surah {
   id: number;
   name: string;
@@ -77,8 +76,7 @@ interface Dua {
 
 type BookmarkType = "surah" | "ayah" | "book" | "dua";
 
-/* -------------------- COMPONENT -------------------- */
-const QuranBookmarkDashboard: React.FC = () => {
+const DashboardBookmarkPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Sample bookmark data
@@ -233,7 +231,6 @@ const QuranBookmarkDashboard: React.FC = () => {
     console.log(`Reading ${type}: ${id}`);
   };
 
-  /* -------------------- SUB COMPONENTS -------------------- */
   const StatCard: React.FC<{
     icon: React.ReactNode;
     title: string;
@@ -460,7 +457,6 @@ const QuranBookmarkDashboard: React.FC = () => {
     </Card>
   );
 
-  /* -------------------- RENDER -------------------- */
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
@@ -592,4 +588,4 @@ const QuranBookmarkDashboard: React.FC = () => {
   );
 };
 
-export default QuranBookmarkDashboard;
+export default DashboardBookmarkPage;
