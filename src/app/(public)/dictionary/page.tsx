@@ -13,8 +13,32 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+// Type definitions
+interface PersianWord {
+  id: number;
+  persian: string;
+  arabic: string;
+  transliteration: string;
+  meaning: string;
+  definition: string;
+  category: string;
+  root: string;
+  examples: string[];
+  verses: string[];
+}
+
+type CategoryType =
+  | "All"
+  | "Divine Names"
+  | "Divine Attributes"
+  | "Worship"
+  | "Scripture"
+  | "Spiritual Concepts"
+  | "Virtues"
+  | "Faith";
+
 // Sample Persian words data for demonstration
-const persianWords = [
+const persianWords: PersianWord[] = [
   {
     id: 1,
     persian: "خداوند",
@@ -120,7 +144,7 @@ const persianWords = [
   },
 ];
 
-const categories = [
+const categories: CategoryType[] = [
   "All",
   "Divine Names",
   "Divine Attributes",
@@ -131,20 +155,20 @@ const categories = [
   "Faith",
 ];
 
-export default function QuranPersianDictionary() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedWord, setSelectedWord] = useState(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+export default function QuranPersianDictionary(): JSX.Element {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
+  const [selectedWord, setSelectedWord] = useState<PersianWord | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
   // Filter words based on search term and category
-  const filteredWords = useMemo(() => {
+  const filteredWords = useMemo<PersianWord[]>(() => {
     let filtered = persianWords;
 
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        (word) =>
+        (word: PersianWord) =>
           word.persian.includes(searchTerm) ||
           word.arabic.includes(searchTerm) ||
           word.transliteration.toLowerCase().includes(searchLower) ||
@@ -154,17 +178,19 @@ export default function QuranPersianDictionary() {
     }
 
     if (selectedCategory !== "All") {
-      filtered = filtered.filter((word) => word.category === selectedCategory);
+      filtered = filtered.filter(
+        (word: PersianWord) => word.category === selectedCategory
+      );
     }
 
     return filtered;
   }, [searchTerm, selectedCategory]);
 
-  const handleWordSelect = (word) => {
+  const handleWordSelect = (word: PersianWord): void => {
     setSelectedWord(word);
   };
 
-  const clearSearch = () => {
+  const clearSearch = (): void => {
     setSearchTerm("");
     setSelectedCategory("All");
   };
@@ -203,7 +229,9 @@ export default function QuranPersianDictionary() {
                     type="text"
                     placeholder="Search Persian, Arabic, or English..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setSearchTerm(e.target.value)
+                    }
                     className="pl-10 pr-10"
                   />
                   {searchTerm && (
@@ -225,13 +253,15 @@ export default function QuranPersianDictionary() {
                   </label>
                   <Select
                     value={selectedCategory}
-                    onValueChange={setSelectedCategory}
+                    onValueChange={(value: CategoryType) =>
+                      setSelectedCategory(value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {categories.map((category: CategoryType) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
@@ -264,7 +294,7 @@ export default function QuranPersianDictionary() {
           <div className="lg:w-1/3">
             <ScrollArea className="h-[600px]">
               <div className="space-y-3">
-                {filteredWords.map((word) => (
+                {filteredWords.map((word: PersianWord) => (
                   <Card
                     key={word.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -383,13 +413,18 @@ export default function QuranPersianDictionary() {
                       Usage Examples
                     </h3>
                     <div className="space-y-2">
-                      {selectedWord.examples.map((example, index) => (
-                        <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                          <p className="text-right font-medium" dir="rtl">
-                            {example}
-                          </p>
-                        </div>
-                      ))}
+                      {selectedWord.examples.map(
+                        (example: string, index: number) => (
+                          <div
+                            key={index}
+                            className="bg-gray-50 p-3 rounded-lg"
+                          >
+                            <p className="text-right font-medium" dir="rtl">
+                              {example}
+                            </p>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
 
