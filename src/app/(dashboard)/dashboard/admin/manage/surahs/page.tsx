@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import {
   Search,
   Plus,
@@ -11,13 +11,43 @@ import {
   Calendar,
 } from "lucide-react";
 
-const ManageSurahsPage = () => {
-  const [surahs, setSurahs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRevelation, setSelectedRevelation] = useState("all");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingSurah, setEditingSurah] = useState(null);
-  const [newSurah, setNewSurah] = useState({
+// Type definitions
+interface Surah {
+  id: number;
+  number: number;
+  nameArabic: string;
+  nameEnglish: string;
+  nameTransliteration: string;
+  meaning: string;
+  totalAyahs: number;
+  revelation: "Meccan" | "Medinan";
+  revelationOrder: number | null;
+  mainThemes: string;
+  description: string;
+}
+
+interface NewSurah {
+  number: string;
+  nameArabic: string;
+  nameEnglish: string;
+  nameTransliteration: string;
+  meaning: string;
+  totalAyahs: string;
+  revelation: "Meccan" | "Medinan";
+  revelationOrder: string;
+  mainThemes: string;
+  description: string;
+}
+
+const ManageSurahsPage: React.FC = () => {
+  const [surahs, setSurahs] = useState<Surah[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedRevelation, setSelectedRevelation] = useState<
+    "all" | "Meccan" | "Medinan"
+  >("all");
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [editingSurah, setEditingSurah] = useState<Surah | null>(null);
+  const [newSurah, setNewSurah] = useState<NewSurah>({
     number: "",
     nameArabic: "",
     nameEnglish: "",
@@ -32,7 +62,7 @@ const ManageSurahsPage = () => {
 
   // Sample data - in a real app, this would come from an API
   useEffect(() => {
-    const sampleSurahs = [
+    const sampleSurahs: Surah[] = [
       {
         id: 1,
         number: 1,
@@ -93,14 +123,14 @@ const ManageSurahsPage = () => {
     setSurahs(sampleSurahs);
   }, []);
 
-  const handleAddSurah = () => {
+  const handleAddSurah = (): void => {
     if (
       newSurah.number &&
       newSurah.nameEnglish &&
       newSurah.nameArabic &&
       newSurah.totalAyahs
     ) {
-      const surah = {
+      const surah: Surah = {
         ...newSurah,
         id: Date.now(),
         number: parseInt(newSurah.number),
@@ -114,7 +144,7 @@ const ManageSurahsPage = () => {
     }
   };
 
-  const handleEditSurah = (surah) => {
+  const handleEditSurah = (surah: Surah): void => {
     setEditingSurah(surah);
     setNewSurah({
       ...surah,
@@ -127,8 +157,10 @@ const ManageSurahsPage = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleUpdateSurah = () => {
-    const updatedSurah = {
+  const handleUpdateSurah = (): void => {
+    if (!editingSurah) return;
+
+    const updatedSurah: Surah = {
       ...newSurah,
       id: editingSurah.id,
       number: parseInt(newSurah.number),
@@ -145,13 +177,13 @@ const ManageSurahsPage = () => {
     resetForm();
   };
 
-  const handleDeleteSurah = (id) => {
+  const handleDeleteSurah = (id: number): void => {
     if (window.confirm("Are you sure you want to delete this Surah?")) {
       setSurahs(surahs.filter((surah) => surah.id !== id));
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setIsAddModalOpen(false);
     setEditingSurah(null);
     setNewSurah({
@@ -195,6 +227,10 @@ const ManageSurahsPage = () => {
   const meccanCount = surahs.filter((s) => s.revelation === "Meccan").length;
   const medinanCount = surahs.filter((s) => s.revelation === "Medinan").length;
 
+  const handleInputChange = (field: keyof NewSurah, value: string): void => {
+    setNewSurah({ ...newSurah, [field]: value });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -224,13 +260,19 @@ const ManageSurahsPage = () => {
                 type="text"
                 placeholder="Search surahs by name, number, meaning, or themes..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setSearchTerm(e.target.value)
+                }
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
             <select
               value={selectedRevelation}
-              onChange={(e) => setSelectedRevelation(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                setSelectedRevelation(
+                  e.target.value as "all" | "Meccan" | "Medinan"
+                )
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="all">All Revelations</option>
@@ -438,8 +480,8 @@ const ManageSurahsPage = () => {
                       <input
                         type="number"
                         value={newSurah.number}
-                        onChange={(e) =>
-                          setNewSurah({ ...newSurah, number: e.target.value })
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange("number", e.target.value)
                         }
                         placeholder="1"
                         min="1"
@@ -454,11 +496,8 @@ const ManageSurahsPage = () => {
                       <input
                         type="number"
                         value={newSurah.totalAyahs}
-                        onChange={(e) =>
-                          setNewSurah({
-                            ...newSurah,
-                            totalAyahs: e.target.value,
-                          })
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange("totalAyahs", e.target.value)
                         }
                         placeholder="7"
                         min="1"
@@ -474,8 +513,8 @@ const ManageSurahsPage = () => {
                     <input
                       type="text"
                       value={newSurah.nameArabic}
-                      onChange={(e) =>
-                        setNewSurah({ ...newSurah, nameArabic: e.target.value })
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange("nameArabic", e.target.value)
                       }
                       placeholder="الفاتحة"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right"
@@ -491,11 +530,8 @@ const ManageSurahsPage = () => {
                       <input
                         type="text"
                         value={newSurah.nameEnglish}
-                        onChange={(e) =>
-                          setNewSurah({
-                            ...newSurah,
-                            nameEnglish: e.target.value,
-                          })
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange("nameEnglish", e.target.value)
                         }
                         placeholder="Al-Fatihah"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -508,11 +544,11 @@ const ManageSurahsPage = () => {
                       <input
                         type="text"
                         value={newSurah.nameTransliteration}
-                        onChange={(e) =>
-                          setNewSurah({
-                            ...newSurah,
-                            nameTransliteration: e.target.value,
-                          })
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange(
+                            "nameTransliteration",
+                            e.target.value
+                          )
                         }
                         placeholder="Al-Faatihah"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -527,8 +563,8 @@ const ManageSurahsPage = () => {
                     <input
                       type="text"
                       value={newSurah.meaning}
-                      onChange={(e) =>
-                        setNewSurah({ ...newSurah, meaning: e.target.value })
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange("meaning", e.target.value)
                       }
                       placeholder="The Opening"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -542,11 +578,11 @@ const ManageSurahsPage = () => {
                       </label>
                       <select
                         value={newSurah.revelation}
-                        onChange={(e) =>
-                          setNewSurah({
-                            ...newSurah,
-                            revelation: e.target.value,
-                          })
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                          handleInputChange(
+                            "revelation",
+                            e.target.value as "Meccan" | "Medinan"
+                          )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       >
@@ -561,11 +597,8 @@ const ManageSurahsPage = () => {
                       <input
                         type="number"
                         value={newSurah.revelationOrder}
-                        onChange={(e) =>
-                          setNewSurah({
-                            ...newSurah,
-                            revelationOrder: e.target.value,
-                          })
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleInputChange("revelationOrder", e.target.value)
                         }
                         placeholder="5"
                         min="1"
@@ -582,8 +615,8 @@ const ManageSurahsPage = () => {
                     <input
                       type="text"
                       value={newSurah.mainThemes}
-                      onChange={(e) =>
-                        setNewSurah({ ...newSurah, mainThemes: e.target.value })
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange("mainThemes", e.target.value)
                       }
                       placeholder="Prayer, Praise of Allah, Guidance (separate with commas)"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -596,14 +629,11 @@ const ManageSurahsPage = () => {
                     </label>
                     <textarea
                       value={newSurah.description}
-                      onChange={(e) =>
-                        setNewSurah({
-                          ...newSurah,
-                          description: e.target.value,
-                        })
+                      onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                        handleInputChange("description", e.target.value)
                       }
                       placeholder="Brief description of the surah's content and significance"
-                      rows="3"
+                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                   </div>
