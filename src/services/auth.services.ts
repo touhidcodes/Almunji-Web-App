@@ -1,4 +1,3 @@
-import { authKey } from "@/constants/authKey";
 import { instance as axiosInstance } from "@/helpers/axios/axiosInstance";
 import { decodeToken } from "@/utils/decodeToken";
 
@@ -10,11 +9,11 @@ import {
 
 export const storeUserInfo = ({ accessToken }: { accessToken: string }) => {
   //   console.log(accessToken);
-  return setToLocalStorage(authKey, accessToken);
+  return setToLocalStorage("accessToken", accessToken);
 };
 
 export const getUserInfo = () => {
-  const authToken = getFromLocalStorage(authKey);
+  const authToken = getFromLocalStorage("accessToken");
   //   console.log(authToken);
   if (authToken) {
     const decodedData: any = decodeToken(authToken);
@@ -28,14 +27,14 @@ export const getUserInfo = () => {
 };
 
 export const isLoggedIn = () => {
-  const authToken = getFromLocalStorage(authKey);
+  const authToken = getFromLocalStorage("accessToken");
   if (authToken) {
     return !!authToken;
   }
 };
 
 export const removeUser = () => {
-  return removeFromLocalStorage(authKey);
+  return removeFromLocalStorage("accessToken");
 };
 
 export const getNewAccessToken = async () => {
