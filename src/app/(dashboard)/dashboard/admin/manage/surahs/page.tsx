@@ -11,34 +11,6 @@ import {
   Calendar,
 } from "lucide-react";
 
-// Type definitions
-interface Surah {
-  id: number;
-  number: number;
-  nameArabic: string;
-  nameEnglish: string;
-  nameTransliteration: string;
-  meaning: string;
-  totalAyahs: number;
-  revelation: "Meccan" | "Medinan";
-  revelationOrder: number | null;
-  mainThemes: string;
-  description: string;
-}
-
-interface NewSurah {
-  number: string;
-  nameArabic: string;
-  nameEnglish: string;
-  nameTransliteration: string;
-  meaning: string;
-  totalAyahs: string;
-  revelation: "Meccan" | "Medinan";
-  revelationOrder: string;
-  mainThemes: string;
-  description: string;
-}
-
 const ManageSurahsPage: React.FC = () => {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
