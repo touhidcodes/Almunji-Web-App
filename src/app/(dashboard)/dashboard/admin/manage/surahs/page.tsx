@@ -10,16 +10,17 @@ import {
   MapPin,
   Calendar,
 } from "lucide-react";
+import { TNewSurah, TSurah } from "@/types/surah";
 
 const ManageSurahsPage: React.FC = () => {
-  const [surahs, setSurahs] = useState<Surah[]>([]);
+  const [surahs, setSurahs] = useState<TSurah[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedRevelation, setSelectedRevelation] = useState<
     "all" | "Meccan" | "Medinan"
   >("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
-  const [editingSurah, setEditingSurah] = useState<Surah | null>(null);
-  const [newSurah, setNewSurah] = useState<NewSurah>({
+  const [editingSurah, setEditingSurah] = useState<TSurah | null>(null);
+  const [newSurah, setNewSurah] = useState<TNewSurah>({
     number: "",
     nameArabic: "",
     nameEnglish: "",
@@ -34,7 +35,7 @@ const ManageSurahsPage: React.FC = () => {
 
   // Sample data - in a real app, this would come from an API
   useEffect(() => {
-    const sampleSurahs: Surah[] = [
+    const sampleSurahs: TSurah[] = [
       {
         id: 1,
         number: 1,
@@ -102,7 +103,7 @@ const ManageSurahsPage: React.FC = () => {
       newSurah.nameArabic &&
       newSurah.totalAyahs
     ) {
-      const surah: Surah = {
+      const surah: TSurah = {
         ...newSurah,
         id: Date.now(),
         number: parseInt(newSurah.number),
@@ -116,7 +117,7 @@ const ManageSurahsPage: React.FC = () => {
     }
   };
 
-  const handleEditSurah = (surah: Surah): void => {
+  const handleEditSurah = (surah: TSurah): void => {
     setEditingSurah(surah);
     setNewSurah({
       ...surah,
@@ -132,7 +133,7 @@ const ManageSurahsPage: React.FC = () => {
   const handleUpdateSurah = (): void => {
     if (!editingSurah) return;
 
-    const updatedSurah: Surah = {
+    const updatedSurah: TSurah = {
       ...newSurah,
       id: editingSurah.id,
       number: parseInt(newSurah.number),
@@ -199,7 +200,7 @@ const ManageSurahsPage: React.FC = () => {
   const meccanCount = surahs.filter((s) => s.revelation === "Meccan").length;
   const medinanCount = surahs.filter((s) => s.revelation === "Medinan").length;
 
-  const handleInputChange = (field: keyof NewSurah, value: string): void => {
+  const handleInputChange = (field: keyof TNewSurah, value: string): void => {
     setNewSurah({ ...newSurah, [field]: value });
   };
 
@@ -214,6 +215,7 @@ const ManageSurahsPage: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-800">
                 Manage Surahs
               </h1>
+              S
             </div>
             <button
               onClick={() => setIsAddModalOpen(true)}
