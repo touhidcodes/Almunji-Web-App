@@ -1,12 +1,11 @@
 "use server";
 
-import { authKey } from "@/constants/authKey";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 const setAccessToken = async (token: string, option?: any) => {
   const cookieStore = await cookies();
-  cookieStore.set(authKey, token);
+  cookieStore.set("accessToken", token);
   if (option && option.redirect) {
     redirect(option.redirect);
   }

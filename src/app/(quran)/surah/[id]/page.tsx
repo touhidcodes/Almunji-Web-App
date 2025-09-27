@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import VerseDisplay from "@/components/Pages/Surah/VerseDisplay";
+import { useGetAQuranVerseQuery } from "@/redux/api/quranApi";
 
 // Mock data - replace with your actual data source/API calls
 const mockSurahs = [
@@ -141,8 +142,9 @@ const SurahPage: React.FC<{
 }> = ({ fontSize = 18, isPlaying = false, onPlayPause }) => {
   const params = useParams();
   const router = useRouter();
-  // const { toast } = useToast();
-
+  const chapter = params.id;
+  const { data, isLoading } = useGetAQuranVerseQuery(chapter);
+  console.log(data);
   const [versesLoading, setVersesLoading] = useState(true);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(
     null

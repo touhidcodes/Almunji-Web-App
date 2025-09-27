@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Providers from "@/providers/providers";
 
 export const metadata: Metadata = {
   title: "Almunji Web App",
@@ -16,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <Toaster position="top-right" />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
