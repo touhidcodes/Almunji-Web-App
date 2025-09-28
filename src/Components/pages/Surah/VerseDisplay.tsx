@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { TSurahData } from "@/types/surah";
 
 interface Surah {
   id: number;
@@ -43,7 +44,7 @@ interface Verse {
 }
 
 interface VerseDisplayProps {
-  surah: Surah | null;
+  surah: TSurahData | null;
   verses: Verse[];
   isLoading?: boolean;
   fontSize?: number;
@@ -407,27 +408,65 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
 
   return (
     <div className={cn("space-y-6", className)}>
-      <SurahHeader
+      {/* <SurahHeader
         surah={surah}
         onNavigate={onNavigate}
         canNavigatePrev={canNavigatePrev}
         canNavigateNext={canNavigateNext}
-      />
+      /> */}
 
       <div className="space-y-6">
         {verses.length > 0 ? (
-          verses.map((verse) => (
-            <VerseCard
-              key={verse.number}
-              verse={verse}
-              surahId={surah.id}
-              fontSize={fontSize}
-              isPlaying={isPlaying}
-              isCurrentPlaying={currentPlayingVerse === verse.number}
-              isBookmarked={bookmarkedVerses.includes(verse.number)}
-              onPlay={() => onPlayPause?.(verse.number)}
-              onBookmarkToggle={() => onBookmarkToggle?.(verse.number)}
-            />
+          surah.bengali.map((ayah, index) => (
+            // <VerseCard
+            //   key={verse.number}
+            //   verse={verse}
+            //   surahId={surah.id}
+            //   fontSize={fontSize}
+            //   isPlaying={isPlaying}
+            //   isCurrentPlaying={currentPlayingVerse === verse.number}
+            //   isBookmarked={bookmarkedVerses.includes(verse.number)}
+            //   onPlay={() => onPlayPause?.(verse.number)}
+            //   onBookmarkToggle={() => onBookmarkToggle?.(verse.number)}
+            // />
+            <Card className="group hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-emerald-200 dark:hover:border-emerald-800">
+              <div className="p-6">
+                {/* Arabic Text */}
+                <div className="text-right mb-6" dir="rtl">
+                  <p
+                    className="font-arabic leading-loose text-gray-900 dark:text-white selection:bg-emerald-100 dark:selection:bg-emerald-900"
+                    style={{
+                      fontSize: `${fontSize + 10}px`,
+                      lineHeight: 2.2,
+                    }}
+                  >
+                    {surah.arabic1[index]}
+                  </p>
+                </div>
+
+                {/* Bangla */}
+                {ayah && (
+                  <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
+                    <p
+                      className="text-gray-600 dark:text-gray-400 italic font-medium"
+                      style={{ fontSize: `${fontSize - 1}px` }}
+                    >
+                      {ayah}
+                    </p>
+                  </div>
+                )}
+
+                {/* English */}
+                <div>
+                  <p
+                    className="leading-relaxed text-gray-700 dark:text-gray-300 selection:bg-blue-100 dark:selection:bg-blue-900"
+                    style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}
+                  >
+                    {surah.english[index]}
+                  </p>
+                </div>
+              </div>
+            </Card>
           ))
         ) : (
           <Card className="p-12 text-center">

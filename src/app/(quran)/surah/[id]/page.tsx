@@ -143,8 +143,8 @@ const SurahPage: React.FC<{
   const params = useParams();
   const router = useRouter();
   const chapter = params.id;
-  const { data, isLoading } = useGetAQuranVerseQuery(chapter);
-  console.log(data);
+  const { data: surahData, isLoading } = useGetAQuranVerseQuery(chapter);
+  // console.log(data);
   const [versesLoading, setVersesLoading] = useState(true);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(
     null
@@ -254,7 +254,7 @@ const SurahPage: React.FC<{
 
   return (
     <VerseDisplay
-      surah={currentSurah}
+      surah={surahData}
       verses={verses}
       isLoading={versesLoading}
       fontSize={fontSize}

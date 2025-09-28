@@ -24,3 +24,16 @@ export interface TNewSurah {
   mainThemes: string;
   description: string;
 }
+export interface TSurahData {
+  surahName: string;
+  surahNameArabic: string;
+  surahNameArabicLong: string;
+  surahNameTranslation: string;
+  revelationPlace: string;
+  totalAyah: number;
+  surahNo: number;
+  english: string[];
+  arabic1: string[];
+  arabic2: string[];
+  bengali: string[];
+}
