@@ -1,110 +1,24 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { useGetAllQuranChaptersQuery } from "@/redux/api/quranApi";
 
 const SurahPage = () => {
   const [selectedTab, setSelectedTab] = useState("Surah");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Ascending");
+  const { data: chaptersData, isLoading } = useGetAllQuranChaptersQuery({});
 
-  const surahs = [
-    {
-      id: 1,
-      number: "01",
-      name: "Al-Fatihah",
-      arabicName: "الفاتحة",
-      englishName: "The Opener",
-      verses: 7,
-    },
-    {
-      id: 2,
-      number: "02",
-      name: "Al-Baqarah",
-      arabicName: "البقرة",
-      englishName: "The Cow",
-      verses: 286,
-    },
-    {
-      id: 3,
-      number: "03",
-      name: "Al-Imran",
-      arabicName: "آل عمران",
-      englishName: "Family of Imran",
-      verses: 200,
-    },
-    {
-      id: 4,
-      number: "04",
-      name: "An-Nisa",
-      arabicName: "النساء",
-      englishName: "The Women",
-      verses: 176,
-    },
-    {
-      id: 5,
-      number: "05",
-      name: "Al-Maidah",
-      arabicName: "المائدة",
-      englishName: "The Table Spread",
-      verses: 120,
-      featured: true,
-    },
-    {
-      id: 6,
-      number: "06",
-      name: "Al-Anam",
-      arabicName: "الأنعام",
-      englishName: "The Cattle",
-      verses: 165,
-    },
-    {
-      id: 7,
-      number: "07",
-      name: "Al-Araf",
-      arabicName: "الأعراف",
-      englishName: "The Heights",
-      verses: 206,
-    },
-    {
-      id: 8,
-      number: "08",
-      name: "Al-Anfal",
-      arabicName: "الأنفال",
-      englishName: "The Spoils of War",
-      verses: 75,
-    },
-    {
-      id: 9,
-      number: "09",
-      name: "At-Taubah",
-      arabicName: "التوبة",
-      englishName: "The Repentance",
-      verses: 129,
-    },
-    {
-      id: 10,
-      number: "10",
-      name: "Yunus",
-      arabicName: "يونس",
-      englishName: "Jonah",
-      verses: 109,
-    },
-    {
-      id: 11,
-      number: "11",
-      name: "Hud",
-      arabicName: "هود",
-      englishName: "Hud",
-      verses: 123,
-    },
-    {
-      id: 12,
-      number: "12",
-      name: "Yusuf",
-      arabicName: "يوسف",
-      englishName: "Joseph",
-      verses: 111,
-    },
-  ];
+  // Transform API data to match component structure
+  const surahs =
+    chaptersData?.map((chapter, index) => ({
+      id: index + 1,
+      number: String(index + 1).padStart(2, "0"),
+      name: chapter.surahName,
+      arabicName: chapter.surahNameArabic,
+      englishName: chapter.surahNameTranslation,
+      verses: chapter.totalAyah,
+      revelationPlace: chapter.revelationPlace,
+    })) || [];
 
   const filteredSurahs = surahs.filter(
     (surah) =>
@@ -120,6 +34,19 @@ const SurahPage = () => {
       return b.id - a.id;
     }
   });
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading Surahs...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
@@ -175,55 +102,72 @@ const SurahPage = () => {
         </div>
       </div>
 
+      {/* Results Count */}
+      <div className="mb-4 text-gray-600 text-sm">
+        Showing {sortedSurahs.length} of {surahs.length} Surahs
+      </div>
+
       {/* Surah Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {sortedSurahs.map((surah) => (
-          <div
-            key={surah.id}
-            className={`relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border ${
-              surah.featured ? "border-teal-500 bg-teal-50" : "border-gray-200"
-            }`}
-          >
-            {/* Surah Number */}
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-2xl font-bold text-gray-400">
-                {surah.number}
-              </span>
-              <span className="text-sm text-gray-500">
-                {surah.verses} verses
-              </span>
-            </div>
-
-            {/* Surah Names */}
-            <div className="mb-4">
-              <h3 className="text-xl font-bold text-gray-800 mb-1">
-                {surah.name}
-              </h3>
-              <p
-                className="text-2xl font-arabic text-gray-700 mb-2 text-right"
-                dir="rtl"
-              >
-                {surah.arabicName}
-              </p>
-              <p className="text-sm text-gray-600">{surah.englishName}</p>
-            </div>
-
-            {/* Featured badge */}
-            {surah.featured && (
-              <div className="absolute top-4 right-4">
-                <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+      {sortedSurahs.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {sortedSurahs.map((surah) => (
+            <div
+              key={surah.id}
+              className="relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 hover:border-teal-500"
+            >
+              {/* Surah Number */}
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-2xl font-bold text-gray-400">
+                  {surah.number}
+                </span>
+                <div className="text-right">
+                  <span className="text-sm text-gray-500 block">
+                    {surah.verses} verses
+                  </span>
+                  {surah.revelationPlace && (
+                    <span className="text-xs text-gray-400 block mt-1">
+                      {surah.revelationPlace}
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
 
-      {/* Show All Button */}
-      <div className="text-center">
-        <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-semibold px-8 py-3 rounded-full transition-colors">
-          Show All Surah
-        </button>
-      </div>
+              {/* Surah Names */}
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-800 mb-1">
+                  {surah.name}
+                </h3>
+                <p
+                  className="text-2xl font-arabic text-gray-700 mb-2 text-right"
+                  dir="rtl"
+                >
+                  {surah.arabicName}
+                </p>
+                <p className="text-sm text-gray-600">{surah.englishName}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-2">
+            <Search className="w-16 h-16 mx-auto" />
+          </div>
+          <p className="text-gray-600">No Surahs found matching your search</p>
+        </div>
+      )}
+
+      {/* Show All Button - Only show if there are hidden results */}
+      {sortedSurahs.length < surahs.length && (
+        <div className="text-center">
+          <button
+            onClick={() => setSearchQuery("")}
+            className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-semibold px-8 py-3 rounded-full transition-colors"
+          >
+            Show All Surahs ({surahs.length})
+          </button>
+        </div>
+      )}
 
       <style jsx>{`
         .font-arabic {
