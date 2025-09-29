@@ -2,15 +2,38 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { useGetAllQuranChaptersQuery } from "@/redux/api/quranApi";
 
+// Type definitions
+interface ChapterData {
+  surahName: string;
+  surahNameArabic: string;
+  surahNameArabicLong: string;
+  surahNameTranslation: string;
+  revelationPlace: string;
+  totalAyah: number;
+}
+
+interface TransformedSurah {
+  id: number;
+  number: string;
+  name: string;
+  arabicName: string;
+  englishName: string;
+  verses: number;
+  revelationPlace: string;
+}
+
+type TabType = "Surah" | "Juz" | "Revelation Order";
+type SortType = "Ascending" | "Descending";
+
 const SurahPage = () => {
-  const [selectedTab, setSelectedTab] = useState("Surah");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("Ascending");
+  const [selectedTab, setSelectedTab] = useState<TabType>("Surah");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortType>("Ascending");
   const { data: chaptersData, isLoading } = useGetAllQuranChaptersQuery({});
 
   // Transform API data to match component structure
-  const surahs =
-    chaptersData?.map((chapter, index) => ({
+  const surahs: TransformedSurah[] =
+    chaptersData?.map((chapter: ChapterData, index: number) => ({
       id: index + 1,
       number: String(index + 1).padStart(2, "0"),
       name: chapter.surahName,
@@ -60,7 +83,7 @@ const SurahPage = () => {
       {/* Navigation Tabs */}
       <div className="flex justify-center mb-6">
         <div className="flex bg-white rounded-full p-1 shadow-sm">
-          {["Surah", "Juz", "Revelation Order"].map((tab) => (
+          {(["Surah", "Juz", "Revelation Order"] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setSelectedTab(tab)}
@@ -93,7 +116,7 @@ const SurahPage = () => {
           <span className="text-gray-600 text-sm">Sort by:</span>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => setSortBy(e.target.value as SortType)}
             className="px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
           >
             <option value="Ascending">Ascending</option>
