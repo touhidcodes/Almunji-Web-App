@@ -45,7 +45,6 @@ interface Verse {
 
 interface VerseDisplayProps {
   surah: TSurahData | null;
-  verses: Verse[];
   isLoading?: boolean;
   fontSize?: number;
   isPlaying?: boolean;
@@ -359,7 +358,6 @@ const VerseCard: React.FC<{
 // Main Component
 const VerseDisplay: React.FC<VerseDisplayProps> = ({
   surah,
-  verses,
   isLoading = false,
   fontSize = 18,
   isPlaying = false,
@@ -416,19 +414,8 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
       /> */}
 
       <div className="space-y-6">
-        {verses.length > 0 ? (
+        {surah ? (
           surah.bengali.map((ayah, index) => (
-            // <VerseCard
-            //   key={verse.number}
-            //   verse={verse}
-            //   surahId={surah.id}
-            //   fontSize={fontSize}
-            //   isPlaying={isPlaying}
-            //   isCurrentPlaying={currentPlayingVerse === verse.number}
-            //   isBookmarked={bookmarkedVerses.includes(verse.number)}
-            //   onPlay={() => onPlayPause?.(verse.number)}
-            //   onBookmarkToggle={() => onBookmarkToggle?.(verse.number)}
-            // />
             <Card className="group hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-emerald-200 dark:hover:border-emerald-800">
               <div className="p-6">
                 {/* Arabic Text */}
@@ -482,7 +469,7 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
       </div>
 
       {/* Bottom Navigation */}
-      {onNavigate && verses.length > 0 && (
+      {onNavigate && surah.arabic1.length > 0 && (
         <div className="flex justify-between pt-8 border-t border-gray-200 dark:border-gray-700">
           <Button
             variant="outline"
