@@ -28,51 +28,7 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import SurahSidebar from "@/components/Pages/Surah/SurahSidebar";
-
-// Mock data - replace with your actual data source
-const mockSurahs = [
-  {
-    id: 1,
-    name: "Al-Faatiha",
-    nameArabic: "الفاتحة",
-    nameTranslation: "The Opening",
-    revelationPlace: "Mecca" as const,
-    totalVerses: 7,
-  },
-  {
-    id: 2,
-    name: "Al-Baqara",
-    nameArabic: "البقرة",
-    nameTranslation: "The Cow",
-    revelationPlace: "Madina" as const,
-    totalVerses: 286,
-  },
-  {
-    id: 3,
-    name: "Aal-i-Imraan",
-    nameArabic: "آل عمران",
-    nameTranslation: "The Family of Imraan",
-    revelationPlace: "Madina" as const,
-    totalVerses: 200,
-  },
-  {
-    id: 4,
-    name: "An-Nisaa",
-    nameArabic: "النساء",
-    nameTranslation: "The Women",
-    revelationPlace: "Madina" as const,
-    totalVerses: 176,
-  },
-  {
-    id: 5,
-    name: "Al-Maida",
-    nameArabic: "المائدة",
-    nameTranslation: "The Table",
-    revelationPlace: "Madina" as const,
-    totalVerses: 120,
-  },
-];
-
+import { useGetChaptersQuery } from "@/redux/api/quranApi";
 interface SurahLayoutProps {
   children: React.ReactNode;
 }
@@ -84,15 +40,15 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [fontSize, setFontSize] = useState([18]);
   const [volume, setVolume] = useState([70]);
-  const [isLoading, setIsLoading] = useState(true);
 
   const pathname = usePathname();
+  const { data: chaptersData, isLoading } = useGetChaptersQuery({});
 
   // Get current surah info from pathname
   const currentSurahId = pathname.startsWith("/surah/")
     ? parseInt(pathname.split("/")[2])
     : null;
-  const currentSurah = mockSurahs.find((s) => s.id === currentSurahId);
+  const currentSurah = chaptersData.find((s) => s.id === currentSurahId);
 
   // Initialize dark mode from localStorage
   useEffect(() => {
@@ -119,8 +75,6 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
     }
 
     // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
   }, []);
 
   // Save settings to localStorage
@@ -401,7 +355,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
       <div className="flex">
         {/* Sidebar */}
         <SurahSidebar
-          surahs={mockSurahs}
+          surahs={chaptersData}
           isOpen={isSidebarOpen}
           onToggle={toggleSidebar}
           isLoading={isLoading}

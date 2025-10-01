@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import VerseDisplay from "@/components/Pages/Surah/VerseDisplay";
-import { useGetAQuranVerseQuery } from "@/redux/api/quranApi";
+import { useGetChapterVersesQuery } from "@/redux/api/quranApi";
 
 const DisplaySurahPage: React.FC<{
   fontSize?: number;
@@ -14,8 +14,8 @@ const DisplaySurahPage: React.FC<{
   const router = useRouter();
   const surahId = parseInt(params.id as string);
 
-  const { data: surahData, isLoading } = useGetAQuranVerseQuery(surahId);
-  console.log(surahData);
+  const { data: versesData, isLoading } = useGetChapterVersesQuery(surahId);
+  console.log(versesData);
 
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(
     null
@@ -68,7 +68,7 @@ const DisplaySurahPage: React.FC<{
 
   return (
     <VerseDisplay
-      surah={surahData}
+      surah={versesData}
       isLoading={isLoading}
       fontSize={fontSize}
       isPlaying={currentPlayingVerse !== null}
