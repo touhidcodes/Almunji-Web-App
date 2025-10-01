@@ -3,9 +3,16 @@ import { baseQuranApi } from "./baseApi";
 
 export const quranApi = baseQuranApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllQuranChapters: build.query({
+    getChapters: build.query({
       query: () => ({
         url: `/surah.json`,
+        method: "GET",
+      }),
+      providesTags: [tagTypes.quran],
+    }),
+    getChapterVerses: build.query({
+      query: (chapter) => ({
+        url: `/${chapter}.json`,
         method: "GET",
       }),
       providesTags: [tagTypes.quran],
@@ -13,13 +20,6 @@ export const quranApi = baseQuranApi.injectEndpoints({
     getAllQuranVerse: build.query({
       query: (chapter) => ({
         url: `/ara-qurandoorinonun/${chapter}.json`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.quran],
-    }),
-    getAQuranVerse: build.query({
-      query: (chapter) => ({
-        url: `/${chapter}.json`,
         method: "GET",
       }),
       providesTags: [tagTypes.quran],
@@ -43,9 +43,9 @@ export const quranApi = baseQuranApi.injectEndpoints({
 });
 
 export const {
-  useGetAllQuranChaptersQuery,
+  useGetChaptersQuery,
+  useGetChapterVersesQuery,
   useGetAllQuranVerseQuery,
-  useGetAQuranVerseQuery,
   useGetSurahByChapterQuery,
   useGetSurahBengaliByChapterQuery,
 } = quranApi;
