@@ -1,6 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { useGetAllQuranChaptersQuery } from "@/redux/api/quranApi";
+import { useGetChaptersQuery } from "@/redux/api/quranApi";
 
 // Type definitions
 interface ChapterData {
@@ -29,7 +31,7 @@ const SurahPage = () => {
   const [selectedTab, setSelectedTab] = useState<TabType>("Surah");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<SortType>("Ascending");
-  const { data: chaptersData, isLoading } = useGetAllQuranChaptersQuery({});
+  const { data: chaptersData, isLoading } = useGetChaptersQuery({});
 
   // Transform API data to match component structure
   const surahs: TransformedSurah[] =
