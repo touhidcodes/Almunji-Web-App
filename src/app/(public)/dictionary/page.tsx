@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, Book, ChevronRight, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -15,16 +17,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Type definitions
 interface PersianWord {
-  id: number;
-  persian: string;
-  arabic: string;
-  transliteration: string;
-  meaning: string;
+  id: string;
+  word: string;
   definition: string;
-  category: string;
-  root: string;
-  examples: string[];
-  verses: string[];
+  pronunciation: string;
+  persian?: string;
+  arabic?: string;
+  transliteration?: string;
+  meaning?: string;
+  category?: string;
+  root?: string;
+  examples?: string[];
+  verses?: string[];
 }
 
 type CategoryType =
@@ -40,7 +44,9 @@ type CategoryType =
 // Sample Persian words data for demonstration
 const persianWords: PersianWord[] = [
   {
-    id: 1,
+    id: "1",
+    word: "string",
+    pronunciation: "string",
     persian: "خداوند",
     arabic: "الله",
     transliteration: "Khudāvand",
@@ -53,7 +59,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:255", "1:1", "112:1"],
   },
   {
-    id: 2,
+    id: "2",
+    word: "string",
+    pronunciation: "string",
     persian: "نماز",
     arabic: "الصلاة",
     transliteration: "Namāz",
@@ -65,7 +73,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:3", "4:103", "20:14"],
   },
   {
-    id: 3,
+    id: "3",
+    word: "string",
+    pronunciation: "string",
     persian: "قرآن",
     arabic: "القرآن",
     transliteration: "Qur'ān",
@@ -78,7 +88,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:2", "17:9", "27:1"],
   },
   {
-    id: 4,
+    id: "345",
+    word: "string",
+    pronunciation: "string",
     persian: "رحمت",
     arabic: "الرحمة",
     transliteration: "Rahmat",
@@ -91,7 +103,9 @@ const persianWords: PersianWord[] = [
     verses: ["7:156", "6:12", "40:7"],
   },
   {
-    id: 5,
+    id: "5",
+    word: "string",
+    pronunciation: "string",
     persian: "توبه",
     arabic: "التوبة",
     transliteration: "Tawbah",
@@ -104,7 +118,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:37", "4:110", "25:71"],
   },
   {
-    id: 6,
+    id: "4",
+    word: "string",
+    pronunciation: "string",
     persian: "صبر",
     arabic: "الصبر",
     transliteration: "Sabr",
@@ -117,7 +133,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:153", "16:126", "103:3"],
   },
   {
-    id: 7,
+    id: "7",
+    word: "string",
+    pronunciation: "string",
     persian: "زکات",
     arabic: "الزكاة",
     transliteration: "Zakāt",
@@ -130,7 +148,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:43", "9:103", "23:4"],
   },
   {
-    id: 8,
+    id: "8",
+    word: "string",
+    pronunciation: "string",
     persian: "ایمان",
     arabic: "الإيمان",
     transliteration: "Īmān",
