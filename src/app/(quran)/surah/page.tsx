@@ -3,16 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { useGetChaptersQuery } from "@/redux/api/quranApi";
-
-// Type definitions
-interface ChapterData {
-  surahName: string;
-  surahNameArabic: string;
-  surahNameArabicLong: string;
-  surahNameTranslation: string;
-  revelationPlace: string;
-  totalAyah: number;
-}
+import { TChapterData } from "@/types/surah";
 
 const SurahPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -20,7 +11,7 @@ const SurahPage = () => {
 
   // Filter surahs based on search query
   const filteredSurahs = Array.isArray(chaptersData)
-    ? chaptersData.filter((chapter: ChapterData) => {
+    ? chaptersData.filter((chapter: TChapterData) => {
         const query = searchQuery.toLowerCase();
         return (
           chapter.surahName.toLowerCase().includes(query) ||
@@ -87,7 +78,7 @@ const SurahPage = () => {
       {/* Surah Grid */}
       {filteredSurahs.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {filteredSurahs.map((chapter: ChapterData, index: number) => (
+          {filteredSurahs.map((chapter: TChapterData, index: number) => (
             <div
               key={index}
               className="relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 hover:border-teal-500"

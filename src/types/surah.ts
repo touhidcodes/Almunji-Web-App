@@ -1,3 +1,13 @@
+// Type definitions
+export interface TChapterData {
+  surahName: string;
+  surahNameArabic: string;
+  surahNameArabicLong: string;
+  surahNameTranslation: string;
+  revelationPlace: string;
+  totalAyah: number;
+}
+
 export interface TSurah {
   id: number;
   number: number;
