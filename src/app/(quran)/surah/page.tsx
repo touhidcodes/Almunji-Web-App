@@ -237,12 +237,12 @@ const SurahPage = () => {
                 </div>
 
                 {/* Surah Names */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <h3 className="text-xl font-bold text-gray-800 group-hover:text-teal-600 transition-colors">
                     {chapter.surahName}
                   </h3>
                   <p
-                    className="text-3xl font-arabic text-gray-700 leading-loose text-right"
+                    className="text-3xl font-amiri text-gray-700 leading-loose text-right"
                     dir="rtl"
                   >
                     {chapter.surahNameArabic}

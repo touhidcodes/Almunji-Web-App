@@ -13,6 +13,7 @@ import {
   Menu,
   Minus,
   Plus,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import SurahSidebar from "@/components/Pages/Surah/SurahSidebar";
 import { useGetChaptersQuery } from "@/redux/api/quranApi";
+
 interface SurahLayoutProps {
   children: React.ReactNode;
 }
@@ -36,21 +38,22 @@ interface SurahLayoutProps {
 const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [fontSize, setFontSize] = useState([18]);
   const [volume, setVolume] = useState([70]);
 
   const pathname = usePathname();
-  const { data: chaptersData, isLoading } = useGetChaptersQuery({});
+  const { data: chaptersData = [], isLoading } = useGetChaptersQuery({});
 
   // Get current surah info from pathname
   const currentSurahId = pathname.startsWith("/surah/")
     ? parseInt(pathname.split("/")[2])
     : null;
-  const currentSurah = chaptersData.find((s) => s.id === currentSurahId);
+  const currentSurah = chaptersData?.find((s: any) => s.id === currentSurahId);
 
-  // Initialize dark mode from localStorage
+  // Initialize settings from localStorage
   useEffect(() => {
     const isDark = localStorage.getItem("darkMode") === "true";
     setIsDarkMode(isDark);
@@ -58,23 +61,19 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
       document.documentElement.classList.add("dark");
     }
 
-    // Get saved settings
     const savedFontSize = localStorage.getItem("fontSize");
-    if (savedFontSize) {
-      setFontSize([parseInt(savedFontSize)]);
-    }
+    if (savedFontSize) setFontSize([parseInt(savedFontSize)]);
 
     const savedVolume = localStorage.getItem("volume");
-    if (savedVolume) {
-      setVolume([parseInt(savedVolume)]);
-    }
+    if (savedVolume) setVolume([parseInt(savedVolume)]);
 
     const savedSidebarState = localStorage.getItem("sidebarOpen");
-    if (savedSidebarState !== null) {
+    if (savedSidebarState !== null)
       setIsSidebarOpen(savedSidebarState === "true");
-    }
 
-    // Simulate loading
+    const savedSidebarCollapsed = localStorage.getItem("sidebarCollapsed");
+    if (savedSidebarCollapsed !== null)
+      setIsSidebarCollapsed(savedSidebarCollapsed === "true");
   }, []);
 
   // Save settings to localStorage
@@ -90,6 +89,10 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
     localStorage.setItem("sidebarOpen", isSidebarOpen.toString());
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", isSidebarCollapsed.toString());
+  }, [isSidebarCollapsed]);
+
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -102,6 +105,8 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleSidebarCollapse = () =>
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   const togglePlayPause = () => setIsPlaying(!isPlaying);
   const toggleMute = () => setIsMuted(!isMuted);
 
@@ -113,9 +118,9 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left side */}
           <div className="flex items-center gap-4">
@@ -124,27 +129,35 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="h-9 w-9 p-0 lg:hidden"
+              className="h-9 w-9 p-0 lg:hidden hover:bg-teal-50 dark:hover:bg-teal-950"
             >
-              <Menu className="h-4 w-4" />
+              {isSidebarOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
 
             {/* Current Surah Info */}
             {currentSurah && (
-              <div className="hidden sm:flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <Badge
                   variant="outline"
-                  className="font-medium border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+                  className="font-semibold border-2 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950 px-3"
                 >
                   {currentSurah.id}
                 </Badge>
-                <Separator orientation="vertical" className="h-6" />
-                <div>
-                  <h2 className="font-semibold text-gray-900 dark:text-white text-sm">
-                    {currentSurah.name}
+                <Separator
+                  orientation="vertical"
+                  className="h-8 hidden sm:block"
+                />
+                <div className="hidden sm:block">
+                  <h2 className="font-bold text-gray-900 dark:text-white">
+                    {currentSurah.surahName}
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {currentSurah.nameTranslation}
+                    {currentSurah.surahNameTranslation} •{" "}
+                    {currentSurah.totalAyah} verses
                   </p>
                 </div>
               </div>
@@ -154,15 +167,16 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
           {/* Right side */}
           <div className="flex items-center gap-2">
             {/* Audio Controls */}
-            <div className="hidden md:flex items-center gap-1 mr-2">
+            <div className="hidden md:flex items-center gap-2 mr-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-2 py-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={togglePlayPause}
                 className={cn(
-                  "h-9 w-9 p-0 transition-colors",
-                  isPlaying &&
-                    "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950"
+                  "h-8 w-8 p-0 transition-all",
+                  isPlaying
+                    ? "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950 hover:bg-teal-100"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
               >
                 {isPlaying ? (
@@ -177,8 +191,10 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                 size="sm"
                 onClick={toggleMute}
                 className={cn(
-                  "h-9 w-9 p-0",
-                  isMuted && "text-red-500 dark:text-red-400"
+                  "h-8 w-8 p-0",
+                  isMuted
+                    ? "text-red-500 dark:text-red-400 hover:bg-red-50"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
               >
                 {isMuted ? (
@@ -189,7 +205,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
               </Button>
 
               {/* Volume Control - Desktop */}
-              <div className="hidden lg:flex items-center gap-2 w-24 ml-2">
+              <div className="hidden lg:flex items-center gap-2 w-24 ml-1">
                 <Slider
                   value={volume}
                   onValueChange={setVolume}
@@ -198,29 +214,32 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                   className="flex-1"
                   disabled={isMuted}
                 />
+                <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right font-medium">
+                  {volume[0]}%
+                </span>
               </div>
             </div>
 
             {/* Font Size Controls - Desktop */}
-            <div className="hidden sm:flex items-center gap-1 mr-2 bg-gray-50 dark:bg-gray-800 rounded-lg p-1">
+            <div className="hidden sm:flex items-center gap-1 mr-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => adjustFontSize(false)}
                 disabled={fontSize[0] <= 12}
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 <Minus className="h-3 w-3" />
               </Button>
-              <span className="text-xs text-gray-600 dark:text-gray-400 min-w-[2.5rem] text-center font-medium">
-                {fontSize[0]}px
+              <span className="text-xs text-gray-700 dark:text-gray-300 min-w-[2.5rem] text-center font-semibold">
+                {fontSize[0]}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => adjustFontSize(true)}
                 disabled={fontSize[0] >= 28}
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 <Plus className="h-3 w-3" />
               </Button>
@@ -231,25 +250,34 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
               variant="ghost"
               size="sm"
               onClick={toggleDarkMode}
-              className="h-9 w-9 p-0"
+              className={cn(
+                "h-9 w-9 p-0 transition-all",
+                isDarkMode
+                  ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950"
+                  : "text-gray-600 hover:bg-gray-100"
+              )}
             >
               {isDarkMode ? (
-                <Sun className="h-4 w-4" />
+                <Sun className="h-5 w-5" />
               ) : (
-                <Moon className="h-4 w-4" />
+                <Moon className="h-5 w-5" />
               )}
             </Button>
 
             {/* Settings Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-                  <Settings className="h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 hover:bg-teal-50 dark:hover:bg-teal-950"
+                >
+                  <Settings className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
+                <DropdownMenuLabel className="flex items-center gap-2 text-base">
+                  <Settings className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                   Reading Settings
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -258,7 +286,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                 <div className="sm:hidden px-3 py-3">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium">Font Size</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
                       {fontSize[0]}px
                     </span>
                   </div>
@@ -276,7 +304,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                 {/* Mobile Audio Controls */}
                 <div className="md:hidden space-y-3 px-3 py-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Audio</span>
+                    <span className="text-sm font-medium">Audio Controls</span>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
@@ -307,7 +335,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Volume</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
                       {volume[0]}%
                     </span>
                   </div>
@@ -328,7 +356,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                 >
                   {isDarkMode ? (
                     <>
-                      <Sun className="mr-2 h-4 w-4" />
+                      <Sun className="mr-2 h-4 w-4 text-yellow-500" />
                       Switch to Light Mode
                     </>
                   ) : (
@@ -355,17 +383,19 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
       <div className="flex">
         {/* Sidebar */}
         <SurahSidebar
-          surahs={chaptersData}
+          chapters={chaptersData}
           isOpen={isSidebarOpen}
           onToggle={toggleSidebar}
           isLoading={isLoading}
+          isCollapsed={isSidebarCollapsed}
+          onCollapse={toggleSidebarCollapse}
         />
 
         {/* Main Content */}
         <main
           className={cn(
             "flex-1 transition-all duration-300 min-h-[calc(100vh-4rem)]",
-            "bg-gray-50 dark:bg-gray-900"
+            "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
           )}
         >
           <div className="container mx-auto px-4 py-6 max-w-4xl">
