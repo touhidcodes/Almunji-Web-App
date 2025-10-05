@@ -118,286 +118,284 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Left side */}
-          <div className="flex items-center gap-4">
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="h-9 w-9 p-0 lg:hidden hover:bg-teal-50 dark:hover:bg-teal-950"
-            >
-              {isSidebarOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </Button>
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+      {/* Sidebar - Full Height */}
+      <SurahSidebar
+        chapters={chaptersData}
+        isOpen={isSidebarOpen}
+        onToggle={toggleSidebar}
+        isLoading={isLoading}
+        isCollapsed={isSidebarCollapsed}
+        onCollapse={toggleSidebarCollapse}
+      />
 
-            {/* Current Surah Info */}
-            {currentSurah && (
-              <div className="flex items-center gap-3">
-                <Badge
-                  variant="outline"
-                  className="font-semibold border-2 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950 px-3"
-                >
-                  {currentSurah.id}
-                </Badge>
-                <Separator
-                  orientation="vertical"
-                  className="h-8 hidden sm:block"
-                />
-                <div className="hidden sm:block">
-                  <h2 className="font-bold text-gray-900 dark:text-white">
-                    {currentSurah.surahName}
-                  </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {currentSurah.surahNameTranslation} •{" "}
-                    {currentSurah.totalAyah} verses
-                  </p>
+      {/* Main Content Area */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Header - Sticky */}
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3">
+            {/* Left side */}
+            <div className="flex items-center gap-4">
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSidebar}
+                className="h-9 w-9 p-0 lg:hidden hover:bg-teal-50 dark:hover:bg-teal-950"
+              >
+                {isSidebarOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+
+              {/* Current Surah Info */}
+              {currentSurah && (
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className="font-semibold border-2 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950 px-3"
+                  >
+                    {currentSurah.id}
+                  </Badge>
+                  <Separator
+                    orientation="vertical"
+                    className="h-8 hidden sm:block"
+                  />
+                  <div className="hidden sm:block">
+                    <h2 className="font-bold text-gray-900 dark:text-white">
+                      {currentSurah.surahName}
+                    </h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {currentSurah.surahNameTranslation} •{" "}
+                      {currentSurah.totalAyah} verses
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right side */}
-          <div className="flex items-center gap-2">
-            {/* Audio Controls */}
-            <div className="hidden md:flex items-center gap-2 mr-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-2 py-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={togglePlayPause}
-                className={cn(
-                  "h-8 w-8 p-0 transition-all",
-                  isPlaying
-                    ? "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950 hover:bg-teal-100"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                )}
-              >
-                {isPlaying ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleMute}
-                className={cn(
-                  "h-8 w-8 p-0",
-                  isMuted
-                    ? "text-red-500 dark:text-red-400 hover:bg-red-50"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                )}
-              >
-                {isMuted ? (
-                  <VolumeX className="h-4 w-4" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </Button>
-
-              {/* Volume Control - Desktop */}
-              <div className="hidden lg:flex items-center gap-2 w-24 ml-1">
-                <Slider
-                  value={volume}
-                  onValueChange={setVolume}
-                  max={100}
-                  step={5}
-                  className="flex-1"
-                  disabled={isMuted}
-                />
-                <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right font-medium">
-                  {volume[0]}%
-                </span>
-              </div>
+              )}
             </div>
 
-            {/* Font Size Controls - Desktop */}
-            <div className="hidden sm:flex items-center gap-1 mr-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => adjustFontSize(false)}
-                disabled={fontSize[0] <= 12}
-                className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-              <span className="text-xs text-gray-700 dark:text-gray-300 min-w-[2.5rem] text-center font-semibold">
-                {fontSize[0]}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => adjustFontSize(true)}
-                disabled={fontSize[0] >= 28}
-                className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-
-            {/* Dark Mode Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleDarkMode}
-              className={cn(
-                "h-9 w-9 p-0 transition-all",
-                isDarkMode
-                  ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950"
-                  : "text-gray-600 hover:bg-gray-100"
-              )}
-            >
-              {isDarkMode ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-
-            {/* Settings Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* Right side */}
+            <div className="flex items-center gap-2">
+              {/* Audio Controls */}
+              <div className="hidden md:flex items-center gap-2 mr-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-2 py-1">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 w-9 p-0 hover:bg-teal-50 dark:hover:bg-teal-950"
+                  onClick={togglePlayPause}
+                  className={cn(
+                    "h-8 w-8 p-0 transition-all",
+                    isPlaying
+                      ? "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950 hover:bg-teal-100"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  )}
                 >
-                  <Settings className="h-5 w-5" />
+                  {isPlaying ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel className="flex items-center gap-2 text-base">
-                  <Settings className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                  Reading Settings
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
 
-                {/* Mobile Font Size Control */}
-                <div className="sm:hidden px-3 py-3">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium">Font Size</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
-                      {fontSize[0]}px
-                    </span>
-                  </div>
-                  <Slider
-                    value={fontSize}
-                    onValueChange={setFontSize}
-                    min={12}
-                    max={28}
-                    step={2}
-                  />
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    isMuted
+                      ? "text-red-500 dark:text-red-400 hover:bg-red-50"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  )}
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </Button>
 
-                <DropdownMenuSeparator className="sm:hidden" />
-
-                {/* Mobile Audio Controls */}
-                <div className="md:hidden space-y-3 px-3 py-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Audio Controls</span>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={togglePlayPause}
-                        className="h-8 w-8 p-0"
-                      >
-                        {isPlaying ? (
-                          <Pause className="h-4 w-4" />
-                        ) : (
-                          <Play className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={toggleMute}
-                        className="h-8 w-8 p-0"
-                      >
-                        {isMuted ? (
-                          <VolumeX className="h-4 w-4" />
-                        ) : (
-                          <Volume2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Volume</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
-                      {volume[0]}%
-                    </span>
-                  </div>
+                {/* Volume Control - Desktop */}
+                <div className="hidden lg:flex items-center gap-2 w-24 ml-1">
                   <Slider
                     value={volume}
                     onValueChange={setVolume}
                     max={100}
                     step={5}
+                    className="flex-1"
                     disabled={isMuted}
                   />
+                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right font-medium">
+                    {volume[0]}%
+                  </span>
                 </div>
+              </div>
 
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  onClick={toggleDarkMode}
-                  className="cursor-pointer"
+              {/* Font Size Controls - Desktop */}
+              <div className="hidden sm:flex items-center gap-1 mr-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => adjustFontSize(false)}
+                  disabled={fontSize[0] <= 12}
+                  className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
-                  {isDarkMode ? (
-                    <>
-                      <Sun className="mr-2 h-4 w-4 text-yellow-500" />
-                      Switch to Light Mode
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="mr-2 h-4 w-4" />
-                      Switch to Dark Mode
-                    </>
-                  )}
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={toggleSidebar}
-                  className="cursor-pointer lg:hidden"
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="text-xs text-gray-700 dark:text-gray-300 min-w-[2.5rem] text-center font-semibold">
+                  {fontSize[0]}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => adjustFontSize(true)}
+                  disabled={fontSize[0] >= 28}
+                  className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
-                  <Menu className="mr-2 h-4 w-4" />
-                  {isSidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+
+              {/* Dark Mode Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleDarkMode}
+                className={cn(
+                  "h-9 w-9 p-0 transition-all",
+                  isDarkMode
+                    ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950"
+                    : "text-gray-600 hover:bg-gray-100"
+                )}
+              >
+                {isDarkMode ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
+
+              {/* Settings Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 p-0 hover:bg-teal-50 dark:hover:bg-teal-950"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72">
+                  <DropdownMenuLabel className="flex items-center gap-2 text-base">
+                    <Settings className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                    Reading Settings
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {/* Mobile Font Size Control */}
+                  <div className="sm:hidden px-3 py-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium">Font Size</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
+                        {fontSize[0]}px
+                      </span>
+                    </div>
+                    <Slider
+                      value={fontSize}
+                      onValueChange={setFontSize}
+                      min={12}
+                      max={28}
+                      step={2}
+                    />
+                  </div>
+
+                  <DropdownMenuSeparator className="sm:hidden" />
+
+                  {/* Mobile Audio Controls */}
+                  <div className="md:hidden space-y-3 px-3 py-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        Audio Controls
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={togglePlayPause}
+                          className="h-8 w-8 p-0"
+                        >
+                          {isPlaying ? (
+                            <Pause className="h-4 w-4" />
+                          ) : (
+                            <Play className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={toggleMute}
+                          className="h-8 w-8 p-0"
+                        >
+                          {isMuted ? (
+                            <VolumeX className="h-4 w-4" />
+                          ) : (
+                            <Volume2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Volume</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
+                        {volume[0]}%
+                      </span>
+                    </div>
+                    <Slider
+                      value={volume}
+                      onValueChange={setVolume}
+                      max={100}
+                      step={5}
+                      disabled={isMuted}
+                    />
+                  </div>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={toggleDarkMode}
+                    className="cursor-pointer"
+                  >
+                    {isDarkMode ? (
+                      <>
+                        <Sun className="mr-2 h-4 w-4 text-yellow-500" />
+                        Switch to Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="mr-2 h-4 w-4" />
+                        Switch to Dark Mode
+                      </>
+                    )}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={toggleSidebar}
+                    className="cursor-pointer lg:hidden"
+                  >
+                    <Menu className="mr-2 h-4 w-4" />
+                    {isSidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <SurahSidebar
-          chapters={chaptersData}
-          isOpen={isSidebarOpen}
-          onToggle={toggleSidebar}
-          isLoading={isLoading}
-          isCollapsed={isSidebarCollapsed}
-          onCollapse={toggleSidebarCollapse}
-        />
-
-        {/* Main Content */}
-        <main
-          className={cn(
-            "flex-1 transition-all duration-300 min-h-[calc(100vh-4rem)]",
-            "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
-          )}
-        >
+        {/* Main Content - Scrollable */}
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
           <div className="container mx-auto px-4 py-6 max-w-4xl">
             {/* Pass props to children */}
             {React.Children.map(children, (child) =>
@@ -406,6 +404,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                     fontSize: fontSize[0],
                     isPlaying,
                     onPlayPause: togglePlayPause,
+                    volume: isMuted ? 0 : volume[0],
                   } as any)
                 : child
             )}
