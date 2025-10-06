@@ -190,6 +190,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                       ? "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950 hover:bg-teal-100"
                       : "hover:bg-gray-100 dark:hover:bg-gray-700"
                   )}
+                  title={isPlaying ? "Pause full surah" : "Play full surah"}
                 >
                   {isPlaying ? (
                     <Pause className="h-4 w-4" />
@@ -208,6 +209,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                       ? "text-red-500 dark:text-red-400 hover:bg-red-50"
                       : "hover:bg-gray-100 dark:hover:bg-gray-700"
                   )}
+                  title={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted ? (
                     <VolumeX className="h-4 w-4" />
@@ -240,6 +242,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                   onClick={() => adjustFontSize(false)}
                   disabled={fontSize[0] <= 12}
                   className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  title="Decrease font size"
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -252,6 +255,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                   onClick={() => adjustFontSize(true)}
                   disabled={fontSize[0] >= 28}
                   className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  title="Increase font size"
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -268,6 +272,9 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                     ? "text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950"
                     : "text-gray-600 hover:bg-gray-100"
                 )}
+                title={
+                  isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+                }
               >
                 {isDarkMode ? (
                   <Sun className="h-5 w-5" />
@@ -394,7 +401,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        {/* Main Content - Scrollable */}
+        {/* Main Content - Scrollable with proper padding for footer */}
         <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
           <div className="container mx-auto px-4 py-6 max-w-4xl">
             {/* Pass props to children */}
