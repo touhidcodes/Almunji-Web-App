@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Moon,
   Sun,
@@ -14,6 +14,8 @@ import {
   Minus,
   Plus,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +46,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   const [fontSize, setFontSize] = useState([18]);
   const [volume, setVolume] = useState([70]);
 
+  const router = useRouter();
   const pathname = usePathname();
   const { data: chaptersData = [], isLoading } = useGetChaptersQuery({});
 
@@ -115,6 +118,15 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
       ? Math.min(28, fontSize[0] + 2)
       : Math.max(12, fontSize[0] - 2);
     setFontSize([newSize]);
+  };
+
+  const handleNavigate = (direction: number) => {
+    if (!currentSurahId) return;
+
+    const newSurahId = currentSurahId + direction;
+    if (newSurahId >= 1 && newSurahId <= 114) {
+      router.push(`/surah/${newSurahId}`);
+    }
   };
 
   return (
@@ -417,6 +429,35 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
             )}
           </div>
         </main>
+        {/* Navigation Footer */}
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-20">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <button
+              onClick={() => handleNavigate(-1)}
+              disabled={!currentSurahId || currentSurahId <= 1}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              Previous
+            </button>
+
+            <button
+              onClick={() => router.push("/")}
+              className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              All Surahs
+            </button>
+
+            <button
+              onClick={() => handleNavigate(1)}
+              disabled={!currentSurahId || currentSurahId >= 114}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

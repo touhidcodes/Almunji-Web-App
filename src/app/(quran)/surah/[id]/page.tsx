@@ -39,6 +39,10 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [repeatMode, setRepeatMode] = useState<"none" | "all" | "one">("none");
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [currentVerseIndex, setCurrentVerseIndex] = useState<number | null>(
+    null
+  );
+  const [isPlayingSurah, setIsPlayingSurah] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const verseRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -131,25 +135,35 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
   }, [selectedReciter, versesData]);
 
   const handlePlayFullSurah = () => {
-    if (audioRef.current && versesData) {
-      setIsPlayingFullSurah(true);
+    if (!versesData?.ayahs?.length) return;
 
-      // If already playing a verse, continue from there
-      const startVerse = currentPlayingVerse || 1;
-      setCurrentPlayingVerse(startVerse);
-
-      const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses && audioData.verses.length > 0) {
-        audioRef.current.src = audioData.verses[startVerse - 1];
-      } else {
-        audioRef.current.src = audioData?.url || "";
-      }
-
-      audioRef.current.play().catch((err) => {
-        console.error("Audio play error:", err);
-        handlePauseAll();
-      });
+    if (isPlayingSurah) {
+      audioRef.current?.pause();
+      setIsPlayingSurah(false);
+      return;
     }
+
+    setCurrentVerseIndex(0);
+    setIsPlayingSurah(true);
+    playVerse(0);
+  };
+
+  const playVerse = (index: number) => {
+    if (!versesData?.ayahs?.[index]) {
+      setIsPlayingSurah(false);
+      setCurrentVerseIndex(null);
+      return;
+    }
+
+    const verse = versesData.ayahs[index];
+    const audioSrc = verse.audio?.url || verse.audioUrl; // adapt this key to your API
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.src = audioSrc;
+    audio.play();
+    setCurrentVerseIndex(index);
   };
 
   const handlePauseAll = () => {
@@ -188,53 +202,14 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
   };
 
   const handleAudioEnded = () => {
-    if (!versesData) return;
-
-    // Handle repeat one
-    if (repeatMode === "one" && currentPlayingVerse) {
-      const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses && audioData.verses[currentPlayingVerse - 1]) {
-        audioRef.current!.src = audioData.verses[currentPlayingVerse - 1];
-        audioRef
-          .current!.play()
-          .catch((err) => console.error("Audio play error:", err));
+    if (isPlayingSurah && currentVerseIndex !== null) {
+      const nextIndex = currentVerseIndex + 1;
+      if (nextIndex < versesData.ayahs.length) {
+        playVerse(nextIndex);
+      } else {
+        setIsPlayingSurah(false);
+        setCurrentVerseIndex(null);
       }
-      return;
-    }
-
-    // Continue to next verse if playing full surah
-    if (
-      isPlayingFullSurah &&
-      currentPlayingVerse &&
-      currentPlayingVerse < versesData.totalAyah
-    ) {
-      const nextVerse = currentPlayingVerse + 1;
-      setCurrentPlayingVerse(nextVerse);
-
-      const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses && audioData.verses[nextVerse - 1]) {
-        audioRef.current!.src = audioData.verses[nextVerse - 1];
-        audioRef
-          .current!.play()
-          .catch((err) => console.error("Audio play error:", err));
-      }
-    } else if (
-      repeatMode === "all" &&
-      currentPlayingVerse === versesData.totalAyah
-    ) {
-      // Repeat all - start from beginning
-      setCurrentPlayingVerse(1);
-      const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses && audioData.verses[0]) {
-        audioRef.current!.src = audioData.verses[0];
-        audioRef
-          .current!.play()
-          .catch((err) => console.error("Audio play error:", err));
-      }
-    } else {
-      // End of surah or single verse
-      handlePauseAll();
-      if (layoutOnPlayPause) layoutOnPlayPause();
     }
   };
 
@@ -269,14 +244,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
         ? prev.filter((v) => v !== verseNumber)
         : [...prev, verseNumber]
     );
-  };
-
-  const handleNavigate = (direction: number) => {
-    const newSurahId = surahId + direction;
-    if (newSurahId >= 1 && newSurahId <= 114) {
-      handlePauseAll();
-      router.push(`/surah/${newSurahId}`);
-    }
   };
 
   const toggleRepeatMode = () => {
@@ -635,36 +602,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
           </div>
         </div>
       )}
-
-      {/* Navigation Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-20">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button
-            onClick={() => handleNavigate(-1)}
-            disabled={versesData.surahNo <= 1}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            Previous
-          </button>
-
-          <button
-            onClick={() => router.push("/")}
-            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            All Surahs
-          </button>
-
-          <button
-            onClick={() => handleNavigate(1)}
-            disabled={versesData.surahNo >= 114}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
 
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} />
