@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Moon,
   Sun,
@@ -32,19 +33,30 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import SurahSidebar from "@/components/Pages/Surah/SurahSidebar";
 import { useGetChaptersQuery } from "@/redux/api/quranApi";
+import { RootState } from "@/redux/store";
+import {
+  setFontSize,
+  setIsPlaying,
+  setVolume,
+} from "@/redux/features/playerSlice";
 
 interface SurahLayoutProps {
   children: React.ReactNode;
 }
 
 const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
+  const dispatch = useDispatch();
+
+  // Get state from Redux
+  const { isPlaying, volume, fontSize } = useSelector(
+    (state: RootState) => state.player
+  );
+
+  // Local state (non-player related)
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [fontSize, setFontSize] = useState([18]);
-  const [volume, setVolume] = useState([70]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -64,11 +76,16 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
       document.documentElement.classList.add("dark");
     }
 
+    // Load player settings into Redux
     const savedFontSize = localStorage.getItem("fontSize");
-    if (savedFontSize) setFontSize([parseInt(savedFontSize)]);
+    if (savedFontSize) {
+      dispatch(setFontSize(parseInt(savedFontSize)));
+    }
 
     const savedVolume = localStorage.getItem("volume");
-    if (savedVolume) setVolume([parseInt(savedVolume)]);
+    if (savedVolume) {
+      dispatch(setVolume(parseInt(savedVolume) / 100)); // Convert to 0-1 range
+    }
 
     const savedSidebarState = localStorage.getItem("sidebarOpen");
     if (savedSidebarState !== null)
@@ -77,15 +94,15 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
     const savedSidebarCollapsed = localStorage.getItem("sidebarCollapsed");
     if (savedSidebarCollapsed !== null)
       setIsSidebarCollapsed(savedSidebarCollapsed === "true");
-  }, []);
+  }, [dispatch]);
 
-  // Save settings to localStorage
+  // Save settings to localStorage when Redux state changes
   useEffect(() => {
-    localStorage.setItem("fontSize", fontSize[0].toString());
+    localStorage.setItem("fontSize", fontSize.toString());
   }, [fontSize]);
 
   useEffect(() => {
-    localStorage.setItem("volume", volume[0].toString());
+    localStorage.setItem("volume", Math.round(volume * 100).toString());
   }, [volume]);
 
   useEffect(() => {
@@ -110,14 +127,22 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleSidebarCollapse = () =>
     setIsSidebarCollapsed(!isSidebarCollapsed);
-  const togglePlayPause = () => setIsPlaying(!isPlaying);
+
+  const togglePlayPause = () => {
+    dispatch(setIsPlaying(!isPlaying));
+  };
+
   const toggleMute = () => setIsMuted(!isMuted);
 
   const adjustFontSize = (increment: boolean) => {
     const newSize = increment
-      ? Math.min(28, fontSize[0] + 2)
-      : Math.max(12, fontSize[0] - 2);
-    setFontSize([newSize]);
+      ? Math.min(28, fontSize + 2)
+      : Math.max(12, fontSize - 2);
+    dispatch(setFontSize(newSize));
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    dispatch(setVolume(value[0] / 100)); // Convert to 0-1 range
   };
 
   const handleNavigate = (direction: number) => {
@@ -128,6 +153,9 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
       router.push(`/surah/${newSurahId}`);
     }
   };
+
+  // Convert volume to percentage for display
+  const volumePercent = Math.round(volume * 100);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -233,15 +261,15 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                 {/* Volume Control - Desktop */}
                 <div className="hidden lg:flex items-center gap-2 w-24 ml-1">
                   <Slider
-                    value={volume}
-                    onValueChange={setVolume}
+                    value={[volumePercent]}
+                    onValueChange={handleVolumeChange}
                     max={100}
                     step={5}
                     className="flex-1"
                     disabled={isMuted}
                   />
                   <span className="text-xs text-gray-500 dark:text-gray-400 w-8 text-right font-medium">
-                    {volume[0]}%
+                    {volumePercent}%
                   </span>
                 </div>
               </div>
@@ -252,20 +280,20 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => adjustFontSize(false)}
-                  disabled={fontSize[0] <= 12}
+                  disabled={fontSize <= 12}
                   className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                   title="Decrease font size"
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
                 <span className="text-xs text-gray-700 dark:text-gray-300 min-w-[2.5rem] text-center font-semibold">
-                  {fontSize[0]}
+                  {fontSize}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => adjustFontSize(true)}
-                  disabled={fontSize[0] >= 28}
+                  disabled={fontSize >= 28}
                   className="h-7 w-7 p-0 hover:bg-gray-200 dark:hover:bg-gray-700"
                   title="Increase font size"
                 >
@@ -318,12 +346,12 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-medium">Font Size</span>
                       <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
-                        {fontSize[0]}px
+                        {fontSize}px
                       </span>
                     </div>
                     <Slider
-                      value={fontSize}
-                      onValueChange={setFontSize}
+                      value={[fontSize]}
+                      onValueChange={(value) => dispatch(setFontSize(value[0]))}
                       min={12}
                       max={28}
                       step={2}
@@ -369,12 +397,12 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Volume</span>
                       <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-medium">
-                        {volume[0]}%
+                        {volumePercent}%
                       </span>
                     </div>
                     <Slider
-                      value={volume}
-                      onValueChange={setVolume}
+                      value={[volumePercent]}
+                      onValueChange={handleVolumeChange}
                       max={100}
                       step={5}
                       disabled={isMuted}
@@ -420,15 +448,16 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
             {React.Children.map(children, (child) =>
               React.isValidElement(child)
                 ? React.cloneElement(child, {
-                    fontSize: fontSize[0],
+                    fontSize: fontSize,
                     isPlaying,
                     onPlayPause: togglePlayPause,
-                    volume: isMuted ? 0 : volume[0],
+                    volume: isMuted ? 0 : volume,
                   } as any)
                 : child
             )}
           </div>
         </main>
+
         {/* Navigation Footer */}
         <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-20">
           <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">

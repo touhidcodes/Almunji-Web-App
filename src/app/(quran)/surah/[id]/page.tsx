@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Play,
   Pause,
-  ChevronLeft,
-  ChevronRight,
   Bookmark,
   Settings,
-  Volume2,
   SkipForward,
   SkipBack,
   Repeat,
@@ -16,33 +14,34 @@ import {
 } from "lucide-react";
 import { useGetChapterVersesQuery } from "@/redux/api/quranApi";
 import { useParams, useRouter } from "next/navigation";
+import { RootState } from "@/redux/store";
+import {
+  setIsPlaying,
+  setCurrentVerse,
+  setRepeatMode,
+  setPlaybackSpeed,
+} from "@/redux/features/playerSlice";
 
-interface QuranChapterDisplayProps {
-  fontSize?: number;
-  isPlaying?: boolean;
-  onPlayPause?: () => void;
-  volume?: number;
-}
+const QuranChapterDisplay: React.FC = () => {
+  const dispatch = useDispatch();
 
-const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
-  fontSize = 18,
-  isPlaying: layoutIsPlaying,
-  onPlayPause: layoutOnPlayPause,
-  volume = 70,
-}) => {
-  const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(
-    null
-  );
+  // Redux state
+  const {
+    isPlaying,
+    volume,
+    fontSize,
+    currentVerse,
+    repeatMode,
+    playbackSpeed,
+  } = useSelector((state: RootState) => state.player);
+
+  // Local UI state
   const [bookmarkedVerses, setBookmarkedVerses] = useState<number[]>([]);
   const [selectedReciter, setSelectedReciter] = useState("1");
-  const [isPlayingFullSurah, setIsPlayingFullSurah] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [repeatMode, setRepeatMode] = useState<"none" | "all" | "one">("none");
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [currentVerseIndex, setCurrentVerseIndex] = useState<number | null>(
     null
   );
-  const [isPlayingSurah, setIsPlayingSurah] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const verseRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -52,7 +51,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
   const surahId = parseInt(params.id as string);
   const { data: versesData, isLoading } = useGetChapterVersesQuery(surahId);
 
-  // Load bookmarks from localStorage on mount
+  // Load bookmarks from localStorage
   useEffect(() => {
     const savedBookmarks = localStorage.getItem(`bookmarks_surah_${surahId}`);
     if (savedBookmarks) {
@@ -68,24 +67,10 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
     );
   }, [bookmarkedVerses, surahId]);
 
-  // Sync with layout play state
-  useEffect(() => {
-    if (
-      layoutIsPlaying !== undefined &&
-      layoutIsPlaying !== isPlayingFullSurah
-    ) {
-      if (layoutIsPlaying) {
-        handlePlayFullSurah();
-      } else {
-        handlePauseAll();
-      }
-    }
-  }, [layoutIsPlaying]);
-
   // Set audio volume
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
+      audioRef.current.volume = volume;
     }
   }, [volume]);
 
@@ -98,10 +83,9 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
 
   // Auto-scroll to playing verse
   useEffect(() => {
-    if (currentPlayingVerse && verseRefs.current[currentPlayingVerse]) {
-      const element = verseRefs.current[currentPlayingVerse];
+    if (currentVerse && verseRefs.current[currentVerse]) {
+      const element = verseRefs.current[currentVerse];
       if (element) {
-        // Calculate offset for header (sticky header height ~64px + some padding)
         const headerOffset = 100;
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition =
@@ -113,86 +97,78 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
         });
       }
     }
-  }, [currentPlayingVerse]);
+  }, [currentVerse]);
 
-  // Update audio source when reciter changes
+  // Update audio when reciter changes
   useEffect(() => {
-    if (versesData && selectedReciter && audioRef.current) {
+    if (versesData && selectedReciter && audioRef.current && currentVerse) {
       const audioData = versesData.audio[selectedReciter];
-      if (audioData) {
-        // If currently playing, update and continue
-        if (currentPlayingVerse && audioData.verses) {
-          audioRef.current.src =
-            audioData.verses[currentPlayingVerse - 1] || audioData.url;
-          if (isPlayingFullSurah || currentPlayingVerse) {
-            audioRef.current
-              .play()
-              .catch((err) => console.error("Audio play error:", err));
-          }
+      if (audioData?.verses) {
+        audioRef.current.src =
+          audioData.verses[currentVerse - 1] || audioData.url;
+        if (isPlaying) {
+          audioRef.current.play().catch(console.error);
         }
       }
     }
-  }, [selectedReciter, versesData]);
-
-  const handlePlayFullSurah = () => {
-    if (!versesData?.ayahs?.length) return;
-
-    if (isPlayingSurah) {
-      audioRef.current?.pause();
-      setIsPlayingSurah(false);
-      return;
-    }
-
-    setCurrentVerseIndex(0);
-    setIsPlayingSurah(true);
-    playVerse(0);
-  };
+  }, [selectedReciter, versesData, currentVerse, isPlaying]);
 
   const playVerse = (index: number) => {
     if (!versesData?.ayahs?.[index]) {
-      setIsPlayingSurah(false);
+      dispatch(setIsPlaying(false));
+      dispatch(setCurrentVerse(null));
       setCurrentVerseIndex(null);
       return;
     }
 
-    const verse = versesData.ayahs[index];
-    const audioSrc = verse.audio?.url || verse.audioUrl; // adapt this key to your API
+    const verseNumber = index + 1;
+    const audioData = versesData.audio[selectedReciter];
+    const audioSrc = audioData?.verses?.[index] || audioData?.url || "";
 
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.src = audioSrc;
-    audio.play();
+    audio.play().catch((err) => {
+      console.error("Audio play error:", err);
+      dispatch(setIsPlaying(false));
+    });
+
     setCurrentVerseIndex(index);
+    dispatch(setCurrentVerse(verseNumber));
+  };
+
+  const handlePlayFullSurah = () => {
+    if (!versesData?.ayahs?.length) return;
+
+    if (isPlaying) {
+      audioRef.current?.pause();
+      dispatch(setIsPlaying(false));
+      return;
+    }
+
+    setCurrentVerseIndex(0);
+    dispatch(setIsPlaying(true));
+    playVerse(0);
   };
 
   const handlePauseAll = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlayingFullSurah(false);
-      setCurrentPlayingVerse(null);
-    }
+    audioRef.current?.pause();
+    dispatch(setIsPlaying(false));
+    dispatch(setCurrentVerse(null));
   };
 
   const handlePlayPauseVerse = (verseNumber: number) => {
-    if (currentPlayingVerse === verseNumber) {
-      // Pause current verse
+    if (currentVerse === verseNumber && isPlaying) {
       handlePauseAll();
-      if (layoutOnPlayPause) layoutOnPlayPause();
     } else {
-      // Play selected verse
-      setCurrentPlayingVerse(verseNumber);
-      setIsPlayingFullSurah(false);
+      dispatch(setCurrentVerse(verseNumber));
+      dispatch(setIsPlaying(true));
 
       if (audioRef.current && versesData) {
         const audioData = versesData.audio[selectedReciter];
-
-        if (audioData?.verses && audioData.verses[verseNumber - 1]) {
-          audioRef.current.src = audioData.verses[verseNumber - 1];
-        } else {
-          audioRef.current.src = audioData?.url || "";
-        }
-
+        audioRef.current.src =
+          audioData?.verses?.[verseNumber - 1] || audioData?.url || "";
         audioRef.current.play().catch((err) => {
           console.error("Audio play error:", err);
           handlePauseAll();
@@ -202,38 +178,44 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
   };
 
   const handleAudioEnded = () => {
-    if (isPlayingSurah && currentVerseIndex !== null) {
+    if (!versesData) return;
+
+    if (repeatMode === "one" && currentVerse) {
+      audioRef.current?.play();
+      return;
+    }
+
+    if (currentVerseIndex !== null) {
       const nextIndex = currentVerseIndex + 1;
+
       if (nextIndex < versesData.ayahs.length) {
         playVerse(nextIndex);
+      } else if (repeatMode === "all") {
+        playVerse(0);
       } else {
-        setIsPlayingSurah(false);
+        dispatch(setIsPlaying(false));
+        dispatch(setCurrentVerse(null));
         setCurrentVerseIndex(null);
       }
     }
   };
 
   const handleSkipVerse = (direction: "next" | "prev") => {
-    if (!versesData || !currentPlayingVerse) return;
+    if (!versesData || !currentVerse) return;
 
-    let newVerse: number;
-    if (direction === "next") {
-      newVerse =
-        currentPlayingVerse < versesData.totalAyah
-          ? currentPlayingVerse + 1
-          : currentPlayingVerse;
-    } else {
-      newVerse = currentPlayingVerse > 1 ? currentPlayingVerse - 1 : 1;
-    }
+    const newVerse =
+      direction === "next"
+        ? Math.min(currentVerse + 1, versesData.totalAyah)
+        : Math.max(currentVerse - 1, 1);
 
-    if (newVerse !== currentPlayingVerse) {
-      setCurrentPlayingVerse(newVerse);
+    if (newVerse !== currentVerse) {
+      dispatch(setCurrentVerse(newVerse));
+      setCurrentVerseIndex(newVerse - 1);
+
       const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses && audioData.verses[newVerse - 1]) {
+      if (audioData?.verses?.[newVerse - 1]) {
         audioRef.current!.src = audioData.verses[newVerse - 1];
-        audioRef
-          .current!.play()
-          .catch((err) => console.error("Audio play error:", err));
+        audioRef.current!.play().catch(console.error);
       }
     }
   };
@@ -250,14 +232,14 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
     const modes: Array<"none" | "all" | "one"> = ["none", "all", "one"];
     const currentIndex = modes.indexOf(repeatMode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
-    setRepeatMode(nextMode);
+    dispatch(setRepeatMode(nextMode));
   };
 
   const cyclePlaybackSpeed = () => {
     const speeds = [0.5, 0.75, 1, 1.25, 1.5];
     const currentIndex = speeds.indexOf(playbackSpeed);
     const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
-    setPlaybackSpeed(nextSpeed);
+    dispatch(setPlaybackSpeed(nextSpeed));
   };
 
   if (isLoading) {
@@ -267,9 +249,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
             Loading verses...
-          </p>
-          <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
-            Please wait
           </p>
         </div>
       </div>
@@ -314,7 +293,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-32">
-      {/* Header Section with Surah Info */}
+      {/* Header Section */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-800 dark:to-teal-800 text-white shadow-lg mb-8">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="text-center">
@@ -333,7 +312,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
             </div>
           </div>
 
-          {/* Audio Control Bar */}
+          {/* Audio Controls */}
           <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <button
@@ -355,7 +334,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => handleSkipVerse("prev")}
-                  disabled={!currentPlayingVerse || currentPlayingVerse <= 1}
+                  disabled={!currentVerse || currentVerse <= 1}
                   className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Previous verse"
                 >
@@ -363,19 +342,11 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                 </button>
 
                 <button
-                  onClick={() => {
-                    if (currentPlayingVerse) {
-                      handlePauseAll();
-                      if (layoutOnPlayPause) layoutOnPlayPause();
-                    } else {
-                      handlePlayFullSurah();
-                      if (layoutOnPlayPause) layoutOnPlayPause();
-                    }
-                  }}
+                  onClick={handlePlayFullSurah}
                   className="p-4 bg-white hover:bg-white/90 text-emerald-600 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                  title={currentPlayingVerse ? "Pause" : "Play full surah"}
+                  title={isPlaying ? "Pause" : "Play full surah"}
                 >
-                  {currentPlayingVerse ? (
+                  {isPlaying && currentVerse ? (
                     <Pause className="w-6 h-6" />
                   ) : (
                     <Play className="w-6 h-6" />
@@ -385,8 +356,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                 <button
                   onClick={() => handleSkipVerse("next")}
                   disabled={
-                    !currentPlayingVerse ||
-                    (versesData && currentPlayingVerse >= versesData.totalAyah)
+                    !currentVerse || currentVerse >= versesData.totalAyah
                   }
                   className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Next verse"
@@ -408,16 +378,14 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
               </button>
             </div>
 
-            {/* Currently Playing Info */}
-            {currentPlayingVerse && (
+            {currentVerse && (
               <div className="text-center text-sm text-white/90">
                 <span className="font-medium">
-                  Playing Ayah {currentPlayingVerse} of {versesData.totalAyah}
+                  Playing Ayah {currentVerse} of {versesData.totalAyah}
                 </span>
               </div>
             )}
 
-            {/* Settings Panel */}
             {showSettings && (
               <div className="mt-4 pt-4 border-t border-white/20 space-y-3">
                 <div className="flex items-center justify-between">
@@ -425,7 +393,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                   <select
                     value={selectedReciter}
                     onChange={(e) => setSelectedReciter(e.target.value)}
-                    className="bg-white/20 border border-white/30 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
+                    className="bg-white/20 border border-white/30 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
                   >
                     {Object.entries(versesData.audio).map(
                       ([key, value]: [string, any]) => (
@@ -469,7 +437,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
       <div className="max-w-4xl mx-auto px-4 space-y-6">
         {versesData.arabic1.map((arabicText: string, index: number) => {
           const verseNumber = index + 1;
-          const isPlaying = currentPlayingVerse === verseNumber;
+          const isPlayingVerse = currentVerse === verseNumber && isPlaying;
           const isBookmarked = bookmarkedVerses.includes(verseNumber);
 
           return (
@@ -477,18 +445,17 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
               key={verseNumber}
               ref={(el) => (verseRefs.current[verseNumber] = el)}
               className={`bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 ${
-                isPlaying
+                isPlayingVerse
                   ? "ring-2 ring-emerald-500 dark:ring-emerald-400 shadow-lg shadow-emerald-200 dark:shadow-emerald-900 scale-[1.01]"
                   : "hover:shadow-lg"
               }`}
             >
               <div className="p-6">
-                {/* Verse Number Badge */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                        isPlaying
+                        isPlayingVerse
                           ? "bg-emerald-600 dark:bg-emerald-500 text-white ring-4 ring-emerald-200 dark:ring-emerald-800 shadow-lg"
                           : "bg-emerald-600 dark:bg-emerald-700 text-white"
                       }`}
@@ -503,14 +470,13 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                     <button
                       onClick={() => handlePlayPauseVerse(verseNumber)}
                       className={`p-2.5 rounded-lg transition-all duration-200 ${
-                        isPlaying
+                        isPlayingVerse
                           ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-800 shadow-md"
                           : "hover:bg-emerald-50 dark:hover:bg-gray-700 text-emerald-600 dark:text-emerald-400"
                       }`}
-                      title={isPlaying ? "Pause verse" : "Play verse"}
-                      aria-label={isPlaying ? "Pause verse" : "Play verse"}
+                      title={isPlayingVerse ? "Pause verse" : "Play verse"}
                     >
-                      {isPlaying ? (
+                      {isPlayingVerse ? (
                         <Pause className="w-5 h-5" />
                       ) : (
                         <Play className="w-5 h-5" />
@@ -524,9 +490,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                           : "text-gray-400 dark:text-gray-500"
                       }`}
                       title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-                      aria-label={
-                        isBookmarked ? "Remove bookmark" : "Add bookmark"
-                      }
                     >
                       <Bookmark
                         className="w-5 h-5"
@@ -536,7 +499,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                   </div>
                 </div>
 
-                {/* Arabic Text */}
                 <div
                   className="text-right mb-5 font-arabic leading-loose text-gray-900 dark:text-gray-100"
                   style={{ fontSize: `${fontSize + 10}px`, lineHeight: "2.2" }}
@@ -544,7 +506,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                   {arabicText}
                 </div>
 
-                {/* Bengali Translation */}
                 <div
                   className="text-left mb-4 leading-relaxed text-gray-700 dark:text-gray-300 border-l-4 border-emerald-500 dark:border-emerald-400 pl-4 py-1 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-r"
                   style={{ fontSize: `${fontSize}px` }}
@@ -552,7 +513,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                   {versesData.bengali[index]}
                 </div>
 
-                {/* English Translation */}
                 <div
                   className="text-left leading-relaxed text-gray-600 dark:text-gray-400 italic pl-4"
                   style={{ fontSize: `${fontSize - 2}px` }}
@@ -565,7 +525,7 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
         })}
       </div>
 
-      {/* Bookmarked Verses Summary */}
+      {/* Bookmarked Verses */}
       {bookmarkedVerses.length > 0 && (
         <div className="max-w-4xl mx-auto px-4 mt-8">
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
@@ -585,13 +545,10 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
                   <button
                     key={verseNum}
                     onClick={() => {
-                      const element = verseRefs.current[verseNum];
-                      if (element) {
-                        element.scrollIntoView({
-                          behavior: "smooth",
-                          block: "center",
-                        });
-                      }
+                      verseRefs.current[verseNum]?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                      });
                     }}
                     className="px-3 py-1 bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 rounded-full text-sm hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors"
                   >
@@ -603,7 +560,6 @@ const QuranChapterDisplay: React.FC<QuranChapterDisplayProps> = ({
         </div>
       )}
 
-      {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} />
     </div>
   );
