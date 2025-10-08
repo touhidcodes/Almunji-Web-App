@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Search, Book, ChevronRight, Filter, X } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Search, Book, ChevronRight, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,14 +21,14 @@ interface PersianWord {
   word: string;
   definition: string;
   pronunciation: string;
-  persian?: string;
-  arabic?: string;
-  transliteration?: string;
-  meaning?: string;
-  category?: string;
-  root?: string;
-  examples?: string[];
-  verses?: string[];
+  persian: string;
+  arabic: string;
+  transliteration: string;
+  meaning: string;
+  category: string;
+  root: string;
+  examples: string[];
+  verses: string[];
 }
 
 type CategoryType =
@@ -45,8 +45,8 @@ type CategoryType =
 const persianWords: PersianWord[] = [
   {
     id: "1",
-    word: "string",
-    pronunciation: "string",
+    word: "Khudāvand",
+    pronunciation: "khu-daa-vand",
     persian: "خداوند",
     arabic: "الله",
     transliteration: "Khudāvand",
@@ -60,8 +60,8 @@ const persianWords: PersianWord[] = [
   },
   {
     id: "2",
-    word: "string",
-    pronunciation: "string",
+    word: "Namāz",
+    pronunciation: "na-maaz",
     persian: "نماز",
     arabic: "الصلاة",
     transliteration: "Namāz",
@@ -74,8 +74,8 @@ const persianWords: PersianWord[] = [
   },
   {
     id: "3",
-    word: "string",
-    pronunciation: "string",
+    word: "Qur'ān",
+    pronunciation: "qur-aan",
     persian: "قرآن",
     arabic: "القرآن",
     transliteration: "Qur'ān",
@@ -88,9 +88,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:2", "17:9", "27:1"],
   },
   {
-    id: "345",
-    word: "string",
-    pronunciation: "string",
+    id: "4",
+    word: "Rahmat",
+    pronunciation: "rah-mat",
     persian: "رحمت",
     arabic: "الرحمة",
     transliteration: "Rahmat",
@@ -104,8 +104,8 @@ const persianWords: PersianWord[] = [
   },
   {
     id: "5",
-    word: "string",
-    pronunciation: "string",
+    word: "Tawbah",
+    pronunciation: "taw-bah",
     persian: "توبه",
     arabic: "التوبة",
     transliteration: "Tawbah",
@@ -118,9 +118,9 @@ const persianWords: PersianWord[] = [
     verses: ["2:37", "4:110", "25:71"],
   },
   {
-    id: "4",
-    word: "string",
-    pronunciation: "string",
+    id: "6",
+    word: "Sabr",
+    pronunciation: "sabr",
     persian: "صبر",
     arabic: "الصبر",
     transliteration: "Sabr",
@@ -134,8 +134,8 @@ const persianWords: PersianWord[] = [
   },
   {
     id: "7",
-    word: "string",
-    pronunciation: "string",
+    word: "Zakāt",
+    pronunciation: "za-kaat",
     persian: "زکات",
     arabic: "الزكاة",
     transliteration: "Zakāt",
@@ -149,8 +149,8 @@ const persianWords: PersianWord[] = [
   },
   {
     id: "8",
-    word: "string",
-    pronunciation: "string",
+    word: "Īmān",
+    pronunciation: "ee-maan",
     persian: "ایمان",
     arabic: "الإيمان",
     transliteration: "Īmān",
@@ -175,20 +175,19 @@ const categories: CategoryType[] = [
   "Faith",
 ];
 
-export default function QuranPersianDictionary(): JSX.Element {
-  const [searchTerm, setSearchTerm] = useState<string>("");
+export default function QuranPersianDictionary() {
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
   const [selectedWord, setSelectedWord] = useState<PersianWord | null>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
   // Filter words based on search term and category
-  const filteredWords = useMemo<PersianWord[]>(() => {
+  const filteredWords = useMemo(() => {
     let filtered = persianWords;
 
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        (word: PersianWord) =>
+        (word) =>
           word.persian.includes(searchTerm) ||
           word.arabic.includes(searchTerm) ||
           word.transliteration.toLowerCase().includes(searchLower) ||
@@ -198,19 +197,17 @@ export default function QuranPersianDictionary(): JSX.Element {
     }
 
     if (selectedCategory !== "All") {
-      filtered = filtered.filter(
-        (word: PersianWord) => word.category === selectedCategory
-      );
+      filtered = filtered.filter((word) => word.category === selectedCategory);
     }
 
     return filtered;
   }, [searchTerm, selectedCategory]);
 
-  const handleWordSelect = (word: PersianWord): void => {
+  const handleWordSelect = (word: PersianWord) => {
     setSelectedWord(word);
   };
 
-  const clearSearch = (): void => {
+  const clearSearch = () => {
     setSearchTerm("");
     setSelectedCategory("All");
   };
@@ -249,9 +246,7 @@ export default function QuranPersianDictionary(): JSX.Element {
                     type="text"
                     placeholder="Search Persian, Arabic, or English..."
                     value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setSearchTerm(e.target.value)
-                    }
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-10"
                   />
                   {searchTerm && (
@@ -273,15 +268,15 @@ export default function QuranPersianDictionary(): JSX.Element {
                   </label>
                   <Select
                     value={selectedCategory}
-                    onValueChange={(value: CategoryType) =>
-                      setSelectedCategory(value)
+                    onValueChange={(value: string) =>
+                      setSelectedCategory(value as CategoryType)
                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category: CategoryType) => (
+                      {categories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
@@ -314,7 +309,7 @@ export default function QuranPersianDictionary(): JSX.Element {
           <div className="lg:w-1/3">
             <ScrollArea className="h-[600px]">
               <div className="space-y-3">
-                {filteredWords.map((word: PersianWord) => (
+                {filteredWords.map((word) => (
                   <Card
                     key={word.id}
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -422,7 +417,7 @@ export default function QuranPersianDictionary(): JSX.Element {
                   {/* Root */}
                   <div>
                     <h3 className="font-semibold text-gray-700 mb-2">Root</h3>
-                    <Badge variant="outline" className="text-lg font-arabic">
+                    <Badge variant="outline" className="text-lg">
                       {selectedWord.root}
                     </Badge>
                   </div>
@@ -433,18 +428,13 @@ export default function QuranPersianDictionary(): JSX.Element {
                       Usage Examples
                     </h3>
                     <div className="space-y-2">
-                      {selectedWord.examples.map(
-                        (example: string, index: number) => (
-                          <div
-                            key={index}
-                            className="bg-gray-50 p-3 rounded-lg"
-                          >
-                            <p className="text-right font-medium" dir="rtl">
-                              {example}
-                            </p>
-                          </div>
-                        )
-                      )}
+                      {selectedWord.examples.map((example, index) => (
+                        <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-right font-medium" dir="rtl">
+                            {example}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
