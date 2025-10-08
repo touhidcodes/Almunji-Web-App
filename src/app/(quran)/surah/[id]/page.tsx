@@ -443,7 +443,9 @@ const QuranChapterDisplay: React.FC = () => {
           return (
             <div
               key={verseNumber}
-              ref={(el) => (verseRefs.current[verseNumber] = el)}
+              ref={(el) => {
+                verseRefs.current[verseNumber] = el;
+              }}
               className={`bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 ${
                 isPlayingVerse
                   ? "ring-2 ring-emerald-500 dark:ring-emerald-400 shadow-lg shadow-emerald-200 dark:shadow-emerald-900 scale-[1.01]"
