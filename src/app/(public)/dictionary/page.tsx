@@ -1,568 +1,475 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useMemo } from "react";
+import { Search, Book, ChevronRight, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
-  Play,
-  Pause,
-  Bookmark,
-  Settings,
-  SkipForward,
-  SkipBack,
-  Repeat,
-  Repeat1,
-} from "lucide-react";
-import { useGetChapterVersesQuery } from "@/redux/api/quranApi";
-import { useParams, useRouter } from "next/navigation";
-import { RootState } from "@/redux/store";
-import {
-  setIsPlaying,
-  setCurrentVerse,
-  setRepeatMode,
-  setPlaybackSpeed,
-} from "@/redux/features/playerSlice";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const QuranChapterDisplay: React.FC = () => {
-  const dispatch = useDispatch();
+// Type definitions
+interface PersianWord {
+  id: string;
+  word: string;
+  definition: string;
+  pronunciation: string;
+  persian: string;
+  arabic: string;
+  transliteration: string;
+  meaning: string;
+  category: string;
+  root: string;
+  examples: string[];
+  verses: string[];
+}
 
-  // Redux state
-  const {
-    isPlaying,
-    volume,
-    fontSize,
-    currentVerse,
-    repeatMode,
-    playbackSpeed,
-  } = useSelector((state: RootState) => state.player);
+type CategoryType =
+  | "All"
+  | "Divine Names"
+  | "Divine Attributes"
+  | "Worship"
+  | "Scripture"
+  | "Spiritual Concepts"
+  | "Virtues"
+  | "Faith";
 
-  // Local UI state
-  const [bookmarkedVerses, setBookmarkedVerses] = useState<number[]>([]);
-  const [selectedReciter, setSelectedReciter] = useState("1");
-  const [showSettings, setShowSettings] = useState(false);
-  const [currentVerseIndex, setCurrentVerseIndex] = useState<number | null>(
-    null
-  );
+// Sample Persian words data for demonstration
+const persianWords: PersianWord[] = [
+  {
+    id: "1",
+    word: "Khudāvand",
+    pronunciation: "khu-daa-vand",
+    persian: "خداوند",
+    arabic: "الله",
+    transliteration: "Khudāvand",
+    meaning: "God, Lord, Allah",
+    definition:
+      "The supreme being, creator and ruler of the universe in Islamic belief",
+    category: "Divine Names",
+    root: "خ-د-ا",
+    examples: ["خداوند بزرگ و بخشنده است", "خداوند عالمیان"],
+    verses: ["2:255", "1:1", "112:1"],
+  },
+  {
+    id: "2",
+    word: "Namāz",
+    pronunciation: "na-maaz",
+    persian: "نماز",
+    arabic: "الصلاة",
+    transliteration: "Namāz",
+    meaning: "Prayer, Salah",
+    definition: "The ritual prayer performed by Muslims five times daily",
+    category: "Worship",
+    root: "ن-م-ز",
+    examples: ["نماز خواندن", "وقت نماز"],
+    verses: ["2:3", "4:103", "20:14"],
+  },
+  {
+    id: "3",
+    word: "Qur'ān",
+    pronunciation: "qur-aan",
+    persian: "قرآن",
+    arabic: "القرآن",
+    transliteration: "Qur'ān",
+    meaning: "The Quran",
+    definition:
+      "The holy book of Islam, believed to be the word of God revealed to Prophet Muhammad",
+    category: "Scripture",
+    root: "ق-ر-آ",
+    examples: ["قرآن کریم", "تلاوت قرآن"],
+    verses: ["2:2", "17:9", "27:1"],
+  },
+  {
+    id: "4",
+    word: "Rahmat",
+    pronunciation: "rah-mat",
+    persian: "رحمت",
+    arabic: "الرحمة",
+    transliteration: "Rahmat",
+    meaning: "Mercy, Compassion",
+    definition:
+      "Divine mercy and compassion, one of the most important attributes of God",
+    category: "Divine Attributes",
+    root: "ر-ح-م",
+    examples: ["رحمت خداوند", "رحمت بی‌پایان"],
+    verses: ["7:156", "6:12", "40:7"],
+  },
+  {
+    id: "5",
+    word: "Tawbah",
+    pronunciation: "taw-bah",
+    persian: "توبه",
+    arabic: "التوبة",
+    transliteration: "Tawbah",
+    meaning: "Repentance",
+    definition:
+      "Sincere repentance and turning back to God after committing sins",
+    category: "Spiritual Concepts",
+    root: "ت-و-ب",
+    examples: ["توبه کردن", "توبه نصوح"],
+    verses: ["2:37", "4:110", "25:71"],
+  },
+  {
+    id: "6",
+    word: "Sabr",
+    pronunciation: "sabr",
+    persian: "صبر",
+    arabic: "الصبر",
+    transliteration: "Sabr",
+    meaning: "Patience, Perseverance",
+    definition:
+      "Patience and perseverance in the face of difficulties, a highly valued virtue in Islam",
+    category: "Virtues",
+    root: "ص-ب-ر",
+    examples: ["صبر جمیل", "اهل صبر"],
+    verses: ["2:153", "16:126", "103:3"],
+  },
+  {
+    id: "7",
+    word: "Zakāt",
+    pronunciation: "za-kaat",
+    persian: "زکات",
+    arabic: "الزكاة",
+    transliteration: "Zakāt",
+    meaning: "Obligatory Charity",
+    definition:
+      "The obligatory giving of a certain portion of wealth to charity, one of the Five Pillars of Islam",
+    category: "Worship",
+    root: "ز-ک-ا",
+    examples: ["پرداخت زکات", "زکات مال"],
+    verses: ["2:43", "9:103", "23:4"],
+  },
+  {
+    id: "8",
+    word: "Īmān",
+    pronunciation: "ee-maan",
+    persian: "ایمان",
+    arabic: "الإيمان",
+    transliteration: "Īmān",
+    meaning: "Faith, Belief",
+    definition:
+      "Faith and belief in God, His messengers, and the teachings of Islam",
+    category: "Faith",
+    root: "ا-ی-م",
+    examples: ["اهل ایمان", "ایمان آوردن"],
+    verses: ["2:4", "49:14", "8:2"],
+  },
+];
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const verseRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+const categories: CategoryType[] = [
+  "All",
+  "Divine Names",
+  "Divine Attributes",
+  "Worship",
+  "Scripture",
+  "Spiritual Concepts",
+  "Virtues",
+  "Faith",
+];
 
-  const params = useParams();
-  const router = useRouter();
-  const surahId = parseInt(params.id as string);
-  const { data: versesData, isLoading } = useGetChapterVersesQuery(surahId);
+export default function QuranPersianDictionary() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
+  const [selectedWord, setSelectedWord] = useState<PersianWord | null>(null);
 
-  // Load bookmarks from localStorage
-  useEffect(() => {
-    const savedBookmarks = localStorage.getItem(`bookmarks_surah_${surahId}`);
-    if (savedBookmarks) {
-      setBookmarkedVerses(JSON.parse(savedBookmarks));
+  // Filter words based on search term and category
+  const filteredWords = useMemo(() => {
+    let filtered = persianWords;
+
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (word) =>
+          word.persian.includes(searchTerm) ||
+          word.arabic.includes(searchTerm) ||
+          word.transliteration.toLowerCase().includes(searchLower) ||
+          word.meaning.toLowerCase().includes(searchLower) ||
+          word.definition.toLowerCase().includes(searchLower)
+      );
     }
-  }, [surahId]);
 
-  // Save bookmarks to localStorage
-  useEffect(() => {
-    localStorage.setItem(
-      `bookmarks_surah_${surahId}`,
-      JSON.stringify(bookmarkedVerses)
-    );
-  }, [bookmarkedVerses, surahId]);
-
-  // Set audio volume
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  // Set playback speed
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = playbackSpeed;
-    }
-  }, [playbackSpeed]);
-
-  // Auto-scroll to playing verse
-  useEffect(() => {
-    if (currentVerse && verseRefs.current[currentVerse]) {
-      const element = verseRefs.current[currentVerse];
-      if (element) {
-        const headerOffset = 100;
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition =
-          elementPosition + window.pageYOffset - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth",
-        });
-      }
-    }
-  }, [currentVerse]);
-
-  // Update audio when reciter changes
-  useEffect(() => {
-    if (versesData && selectedReciter && audioRef.current && currentVerse) {
-      const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses) {
-        audioRef.current.src =
-          audioData.verses[currentVerse - 1] || audioData.url;
-        if (isPlaying) {
-          audioRef.current.play().catch(console.error);
-        }
-      }
-    }
-  }, [selectedReciter, versesData, currentVerse, isPlaying]);
-
-  const playVerse = (index: number) => {
-    if (!versesData?.ayahs?.[index]) {
-      dispatch(setIsPlaying(false));
-      dispatch(setCurrentVerse(null));
-      setCurrentVerseIndex(null);
-      return;
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter((word) => word.category === selectedCategory);
     }
 
-    const verseNumber = index + 1;
-    const audioData = versesData.audio[selectedReciter];
-    const audioSrc = audioData?.verses?.[index] || audioData?.url || "";
+    return filtered;
+  }, [searchTerm, selectedCategory]);
 
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.src = audioSrc;
-    audio.play().catch((err) => {
-      console.error("Audio play error:", err);
-      dispatch(setIsPlaying(false));
-    });
-
-    setCurrentVerseIndex(index);
-    dispatch(setCurrentVerse(verseNumber));
+  const handleWordSelect = (word: PersianWord) => {
+    setSelectedWord(word);
   };
 
-  const handlePlayFullSurah = () => {
-    if (!versesData?.ayahs?.length) return;
-
-    if (isPlaying) {
-      audioRef.current?.pause();
-      dispatch(setIsPlaying(false));
-      return;
-    }
-
-    setCurrentVerseIndex(0);
-    dispatch(setIsPlaying(true));
-    playVerse(0);
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSelectedCategory("All");
   };
-
-  const handlePauseAll = () => {
-    audioRef.current?.pause();
-    dispatch(setIsPlaying(false));
-    dispatch(setCurrentVerse(null));
-  };
-
-  const handlePlayPauseVerse = (verseNumber: number) => {
-    if (currentVerse === verseNumber && isPlaying) {
-      handlePauseAll();
-    } else {
-      dispatch(setCurrentVerse(verseNumber));
-      dispatch(setIsPlaying(true));
-
-      if (audioRef.current && versesData) {
-        const audioData = versesData.audio[selectedReciter];
-        audioRef.current.src =
-          audioData?.verses?.[verseNumber - 1] || audioData?.url || "";
-        audioRef.current.play().catch((err) => {
-          console.error("Audio play error:", err);
-          handlePauseAll();
-        });
-      }
-    }
-  };
-
-  const handleAudioEnded = () => {
-    if (!versesData) return;
-
-    if (repeatMode === "one" && currentVerse) {
-      audioRef.current?.play();
-      return;
-    }
-
-    if (currentVerseIndex !== null) {
-      const nextIndex = currentVerseIndex + 1;
-
-      if (nextIndex < versesData.ayahs.length) {
-        playVerse(nextIndex);
-      } else if (repeatMode === "all") {
-        playVerse(0);
-      } else {
-        dispatch(setIsPlaying(false));
-        dispatch(setCurrentVerse(null));
-        setCurrentVerseIndex(null);
-      }
-    }
-  };
-
-  const handleSkipVerse = (direction: "next" | "prev") => {
-    if (!versesData || !currentVerse) return;
-
-    const newVerse =
-      direction === "next"
-        ? Math.min(currentVerse + 1, versesData.totalAyah)
-        : Math.max(currentVerse - 1, 1);
-
-    if (newVerse !== currentVerse) {
-      dispatch(setCurrentVerse(newVerse));
-      setCurrentVerseIndex(newVerse - 1);
-
-      const audioData = versesData.audio[selectedReciter];
-      if (audioData?.verses?.[newVerse - 1]) {
-        audioRef.current!.src = audioData.verses[newVerse - 1];
-        audioRef.current!.play().catch(console.error);
-      }
-    }
-  };
-
-  const handleBookmarkToggle = (verseNumber: number) => {
-    setBookmarkedVerses((prev) =>
-      prev.includes(verseNumber)
-        ? prev.filter((v) => v !== verseNumber)
-        : [...prev, verseNumber]
-    );
-  };
-
-  const toggleRepeatMode = () => {
-    const modes: Array<"none" | "all" | "one"> = ["none", "all", "one"];
-    const currentIndex = modes.indexOf(repeatMode);
-    const nextMode = modes[(currentIndex + 1) % modes.length];
-    dispatch(setRepeatMode(nextMode));
-  };
-
-  const cyclePlaybackSpeed = () => {
-    const speeds = [0.5, 0.75, 1, 1.25, 1.5];
-    const currentIndex = speeds.indexOf(playbackSpeed);
-    const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
-    dispatch(setPlaybackSpeed(nextSpeed));
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
-            Loading verses...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!versesData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
-          <div className="text-red-600 dark:text-red-400 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Failed to Load Verses
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Please try again or select a different Surah
-          </p>
-          <button
-            onClick={() => router.push("/")}
-            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-32">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-800 dark:to-teal-800 text-white shadow-lg mb-8">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="text-center">
-            <div className="text-5xl font-arabic mb-3 drop-shadow-lg">
-              {versesData.surahNameArabic}
-            </div>
-            <div className="text-2xl font-bold mb-2">
-              {versesData.surahName}
-            </div>
-            <div className="text-sm opacity-90 flex items-center justify-center gap-2 flex-wrap">
-              <span>{versesData.surahNameTranslation}</span>
-              <span>•</span>
-              <span>{versesData.revelationPlace}</span>
-              <span>•</span>
-              <span>{versesData.totalAyah} Ayahs</span>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Book className="h-8 w-8 text-emerald-600" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+              فرهنگ فارسی قرآن
+            </h1>
           </div>
+          <p className="text-gray-600 text-lg">
+            Persian Dictionary of Quranic Terms
+          </p>
+        </div>
 
-          {/* Audio Controls */}
-          <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <button
-                onClick={toggleRepeatMode}
-                className={`p-2 rounded-lg transition-all ${
-                  repeatMode !== "none"
-                    ? "bg-white/30 text-white"
-                    : "bg-white/10 text-white/70 hover:bg-white/20"
-                }`}
-                title={`Repeat: ${repeatMode}`}
-              >
-                {repeatMode === "one" ? (
-                  <Repeat1 className="w-5 h-5" />
-                ) : (
-                  <Repeat className="w-5 h-5" />
-                )}
-              </button>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleSkipVerse("prev")}
-                  disabled={!currentVerse || currentVerse <= 1}
-                  className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  title="Previous verse"
-                >
-                  <SkipBack className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={handlePlayFullSurah}
-                  className="p-4 bg-white hover:bg-white/90 text-emerald-600 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                  title={isPlaying ? "Pause" : "Play full surah"}
-                >
-                  {isPlaying && currentVerse ? (
-                    <Pause className="w-6 h-6" />
-                  ) : (
-                    <Play className="w-6 h-6" />
+        <div className="flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+          {/* Search and Filter Section */}
+          <div className="lg:w-1/3">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Search Dictionary
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search Persian, Arabic, or English..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-1 top-1 h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   )}
-                </button>
-
-                <button
-                  onClick={() => handleSkipVerse("next")}
-                  disabled={
-                    !currentVerse || currentVerse >= versesData.totalAyah
-                  }
-                  className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  title="Next verse"
-                >
-                  <SkipForward className="w-5 h-5" />
-                </button>
-              </div>
-
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className={`p-2 rounded-lg transition-all ${
-                  showSettings
-                    ? "bg-white/30 text-white"
-                    : "bg-white/10 text-white/70 hover:bg-white/20"
-                }`}
-                title="Audio settings"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
-
-            {currentVerse && (
-              <div className="text-center text-sm text-white/90">
-                <span className="font-medium">
-                  Playing Ayah {currentVerse} of {versesData.totalAyah}
-                </span>
-              </div>
-            )}
-
-            {showSettings && (
-              <div className="mt-4 pt-4 border-t border-white/20 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Reciter</span>
-                  <select
-                    value={selectedReciter}
-                    onChange={(e) => setSelectedReciter(e.target.value)}
-                    className="bg-white/20 border border-white/30 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
-                  >
-                    {Object.entries(versesData.audio).map(
-                      ([key, value]: [string, any]) => (
-                        <option
-                          key={key}
-                          value={key}
-                          className="text-gray-900 bg-white"
-                        >
-                          {value.reciter}
-                        </option>
-                      )
-                    )}
-                  </select>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Playback Speed</span>
-                  <button
-                    onClick={cyclePlaybackSpeed}
-                    className="bg-white/20 hover:bg-white/30 border border-white/30 rounded-lg px-3 py-1.5 text-sm transition-colors"
+                {/* Category Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Filter by Category
+                  </label>
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={(value: string) =>
+                      setSelectedCategory(value as CategoryType)
+                    }
                   >
-                    {playbackSpeed}x
-                  </button>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
-            )}
+
+                {/* Clear Filters */}
+                {(searchTerm || selectedCategory !== "All") && (
+                  <Button
+                    variant="outline"
+                    onClick={clearSearch}
+                    className="w-full"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+
+                {/* Results Count */}
+                <div className="text-sm text-gray-500 pt-2 border-t">
+                  {filteredWords.length} word
+                  {filteredWords.length !== 1 ? "s" : ""} found
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </div>
 
-      {/* Bismillah */}
-      {versesData.surahNo !== 1 && versesData.surahNo !== 9 && (
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="text-center text-4xl md:text-5xl font-arabic text-emerald-700 dark:text-emerald-400 drop-shadow-sm">
-            بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-          </div>
-        </div>
-      )}
-
-      {/* Verses */}
-      <div className="max-w-4xl mx-auto px-4 space-y-6">
-        {versesData.arabic1.map((arabicText: string, index: number) => {
-          const verseNumber = index + 1;
-          const isPlayingVerse = currentVerse === verseNumber && isPlaying;
-          const isBookmarked = bookmarkedVerses.includes(verseNumber);
-
-          return (
-            <div
-              key={verseNumber}
-              ref={(el) => (verseRefs.current[verseNumber] = el)}
-              className={`bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 ${
-                isPlayingVerse
-                  ? "ring-2 ring-emerald-500 dark:ring-emerald-400 shadow-lg shadow-emerald-200 dark:shadow-emerald-900 scale-[1.01]"
-                  : "hover:shadow-lg"
-              }`}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                        isPlayingVerse
-                          ? "bg-emerald-600 dark:bg-emerald-500 text-white ring-4 ring-emerald-200 dark:ring-emerald-800 shadow-lg"
-                          : "bg-emerald-600 dark:bg-emerald-700 text-white"
-                      }`}
-                    >
-                      {verseNumber}
-                    </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                      Ayah {verseNumber}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handlePlayPauseVerse(verseNumber)}
-                      className={`p-2.5 rounded-lg transition-all duration-200 ${
-                        isPlayingVerse
-                          ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-800 shadow-md"
-                          : "hover:bg-emerald-50 dark:hover:bg-gray-700 text-emerald-600 dark:text-emerald-400"
-                      }`}
-                      title={isPlayingVerse ? "Pause verse" : "Play verse"}
-                    >
-                      {isPlayingVerse ? (
-                        <Pause className="w-5 h-5" />
-                      ) : (
-                        <Play className="w-5 h-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleBookmarkToggle(verseNumber)}
-                      className={`p-2.5 hover:bg-emerald-50 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 ${
-                        isBookmarked
-                          ? "text-amber-500 dark:text-amber-400"
-                          : "text-gray-400 dark:text-gray-500"
-                      }`}
-                      title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-                    >
-                      <Bookmark
-                        className="w-5 h-5"
-                        fill={isBookmarked ? "currentColor" : "none"}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  className="text-right mb-5 font-arabic leading-loose text-gray-900 dark:text-gray-100"
-                  style={{ fontSize: `${fontSize + 10}px`, lineHeight: "2.2" }}
-                >
-                  {arabicText}
-                </div>
-
-                <div
-                  className="text-left mb-4 leading-relaxed text-gray-700 dark:text-gray-300 border-l-4 border-emerald-500 dark:border-emerald-400 pl-4 py-1 bg-emerald-50/50 dark:bg-emerald-900/20 rounded-r"
-                  style={{ fontSize: `${fontSize}px` }}
-                >
-                  {versesData.bengali[index]}
-                </div>
-
-                <div
-                  className="text-left leading-relaxed text-gray-600 dark:text-gray-400 italic pl-4"
-                  style={{ fontSize: `${fontSize - 2}px` }}
-                >
-                  {versesData.english[index]}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Bookmarked Verses */}
-      {bookmarkedVerses.length > 0 && (
-        <div className="max-w-4xl mx-auto px-4 mt-8">
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Bookmark
-                className="w-5 h-5 text-amber-600 dark:text-amber-400"
-                fill="currentColor"
-              />
-              <span className="font-semibold text-amber-900 dark:text-amber-200">
-                Bookmarked Verses ({bookmarkedVerses.length})
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {bookmarkedVerses
-                .sort((a, b) => a - b)
-                .map((verseNum) => (
-                  <button
-                    key={verseNum}
-                    onClick={() => {
-                      verseRefs.current[verseNum]?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center",
-                      });
-                    }}
-                    className="px-3 py-1 bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 rounded-full text-sm hover:bg-amber-300 dark:hover:bg-amber-700 transition-colors"
+          {/* Words List */}
+          <div className="lg:w-1/3">
+            <ScrollArea className="h-[600px]">
+              <div className="space-y-3">
+                {filteredWords.map((word) => (
+                  <Card
+                    key={word.id}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                      selectedWord?.id === word.id
+                        ? "ring-2 ring-emerald-500 bg-emerald-50"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => handleWordSelect(word)}
                   >
-                    Ayah {verseNum}
-                  </button>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="text-2xl font-bold text-right"
+                              dir="rtl"
+                            >
+                              {word.persian}
+                            </span>
+                            <span className="text-lg text-gray-600" dir="rtl">
+                              {word.arabic}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 italic">
+                            {word.transliteration}
+                          </p>
+                          <p className="text-sm font-medium text-gray-700">
+                            {word.meaning}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                          <Badge variant="secondary" className="text-xs">
+                            {word.category}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-            </div>
+              </div>
+
+              {filteredWords.length === 0 && (
+                <Card className="text-center py-8">
+                  <CardContent>
+                    <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-700 mb-2">
+                      No words found
+                    </h3>
+                    <p className="text-gray-500">
+                      Try adjusting your search terms or filters
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </ScrollArea>
+          </div>
+
+          {/* Word Details */}
+          <div className="lg:w-1/3">
+            {selectedWord ? (
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <div className="space-y-2">
+                    <div className="text-center">
+                      <h2
+                        className="text-3xl font-bold text-right mb-2"
+                        dir="rtl"
+                      >
+                        {selectedWord.persian}
+                      </h2>
+                      <p className="text-xl text-gray-600 mb-1" dir="rtl">
+                        {selectedWord.arabic}
+                      </p>
+                      <p className="text-lg italic text-gray-500">
+                        {selectedWord.transliteration}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="mx-auto w-fit">
+                      {selectedWord.category}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Meaning */}
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      Meaning
+                    </h3>
+                    <p className="text-lg font-medium text-emerald-600">
+                      {selectedWord.meaning}
+                    </p>
+                  </div>
+
+                  {/* Definition */}
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      Definition
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {selectedWord.definition}
+                    </p>
+                  </div>
+
+                  {/* Root */}
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-2">Root</h3>
+                    <Badge variant="outline" className="text-lg">
+                      {selectedWord.root}
+                    </Badge>
+                  </div>
+
+                  {/* Examples */}
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      Usage Examples
+                    </h3>
+                    <div className="space-y-2">
+                      {selectedWord.examples.map((example, index) => (
+                        <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-right font-medium" dir="rtl">
+                            {example}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quranic References */}
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-2">
+                      Quranic References
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedWord.verses.map((verse, index) => (
+                        <Badge key={index} variant="secondary">
+                          {verse}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Book className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-medium text-gray-700 mb-2">
+                    Select a word to view details
+                  </h3>
+                  <p className="text-gray-500">
+                    Click on any word from the list to see its detailed
+                    information, definition, and Quranic references.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
-      )}
-
-      <audio ref={audioRef} onEnded={handleAudioEnded} />
+      </div>
     </div>
   );
-};
-
-export default QuranChapterDisplay;
+}
