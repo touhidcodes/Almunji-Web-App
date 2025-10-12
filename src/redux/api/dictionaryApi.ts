@@ -1,14 +1,25 @@
 import { tagTypes } from "../tags";
-import { baseQuranApi } from "./baseApi";
+import { baseServerApi } from "./baseApi";
 
-export const dictionaryApi = baseQuranApi.injectEndpoints({
+export const dictionaryApi = baseServerApi.injectEndpoints({
   endpoints: (build) => ({
     getDictionarySuggestions: build.query({
-      query: (word) => ({
-        url: `/dictionary/suggestion?word=${word}`,
-        method: "GET",
-      }),
+      query: (debouncedSearchTerm) => {
+        // Properly encode the search term for Persian/Arabic characters
+        const encodedWord = encodeURIComponent(debouncedSearchTerm);
+        return {
+          url: `/dictionary/suggestion?searchTerm=${encodedWord}`,
+          method: "GET",
+        };
+      },
       providesTags: [tagTypes.dictionary],
+      // Handle undefined or null responses
+      transformResponse: (response: any) => {
+        if (!response || response === undefined) {
+          return { data: [] };
+        }
+        return response;
+      },
     }),
     getDictionaryWord: build.query({
       query: (id) => ({
@@ -16,8 +27,16 @@ export const dictionaryApi = baseQuranApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: [tagTypes.dictionary],
+      // Handle undefined or null responses
+      transformResponse: (response: any) => {
+        if (!response || response === undefined) {
+          return { data: null };
+        }
+        return response;
+      },
     }),
   }),
 });
 
-export const { useGetDictionarySuggestionsQuery } = dictionaryApi;
+export const { useGetDictionarySuggestionsQuery, useGetDictionaryWordQuery } =
+  dictionaryApi;

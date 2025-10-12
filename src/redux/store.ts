@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { reducer } from "./rootReducer";
-import { baseApi } from "./api/baseApi";
+import { baseServerApi } from "./api/baseApi";
 import { baseQuranApi } from "./api/baseApi";
 
 export const store = configureStore({
   reducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
-      .concat(baseApi.middleware)
+      .concat(baseServerApi.middleware)
       .concat(baseQuranApi.middleware),
 });
 

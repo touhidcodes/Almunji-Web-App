@@ -1,7 +1,7 @@
 import { tagTypes } from "../tags";
-import { baseApi } from "./baseApi";
+import { baseServerApi } from "./baseApi";
 
-export const userApi = baseApi.injectEndpoints({
+export const userApi = baseServerApi.injectEndpoints({
   endpoints: (build) => ({
     getAllUser: build.query({
       query: () => ({

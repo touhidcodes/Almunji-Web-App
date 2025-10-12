@@ -3,12 +3,14 @@ import { tagTypesList } from "../tags";
 import { axiosBaseQuery } from "../../helpers/axios/axiosBaseQuery";
 
 // const baseUrl = `${import.meta.env.BACKEND_URL}`;
-const baseUrl = `http://localhost:5000/api`;
+// const baseUrl = `http://localhost:5000/api`;
+const baseUrl = `https://server.almunji.com/api/v1`;
+
 // const quranApiUrl = `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions`;
 const quranApiUrl = `https://quranapi.pages.dev/api`;
 
 // Define a service using a base URL and expected endpoints
-export const baseApi = createApi({
+export const baseServerApi = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery({
     baseUrl,
