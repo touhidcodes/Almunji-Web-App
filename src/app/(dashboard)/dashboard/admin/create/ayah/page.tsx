@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { BookOpen, Save, X, AlertCircle, Check } from "lucide-react";
 
