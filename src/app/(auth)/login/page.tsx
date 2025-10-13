@@ -8,50 +8,16 @@ import FormInput from "@/components/Forms/FormInput";
 import Link from "next/link";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { AxiosError } from "axios";
+import { useRouter, useSearchParams } from "next/navigation";
 import { loginValidationSchema } from "@/schema/authSchema";
 import { userLogin } from "@/services/actions/userLogin";
 import { toast } from "sonner";
-import { userRegister } from "@/services/actions/userRegister";
 
-interface LoginPageProps {
-  isLogin?: boolean;
-  setIsLogin?: (value: boolean) => void;
-  onTestLogin?: (role: "admin" | "user") => void;
-  toggle?: () => void;
-}
-
-const LoginPage = ({
-  isLogin = true,
-  setIsLogin = () => {},
-  onTestLogin,
-  toggle = () => {},
-}: LoginPageProps) => {
+export default function LoginPage() {
   const [loading, setLoading] = useState(false);
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
   const [error, setError] = useState("");
-  const [api, setApi] = useState<any>(null); // Replace with proper type
   const router = useRouter();
-
-  useEffect(() => {
-    if (!api) return;
-
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap());
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
-
-  const toggleForm = () => {
-    const newType = isLogin ? "register" : "login";
-    router.replace(`/auth?type=${newType}`);
-    setIsLogin(!isLogin);
-    setError("");
-  };
+  const searchParams = useSearchParams();
 
   const handleLogin = async (values: FieldValues) => {
     try {
@@ -89,7 +55,9 @@ const LoginPage = ({
     await handleLogin(credentials);
   };
 
-  const defaultTestLogin = onTestLogin || handleTestLogin;
+  const handleToggle = () => {
+    router.push("/auth/register");
+  };
 
   return (
     <div className="w-full max-w-sm space-y-5">
@@ -154,7 +122,7 @@ const LoginPage = ({
         <Button
           variant="outline"
           className="bg-transparent border-slate-600 hover:bg-slate-800 hover:text-white hover:border-white rounded-full px-6 py-2 font-medium transition-all duration-200 group"
-          onClick={() => defaultTestLogin("user")}
+          onClick={() => handleTestLogin("user")}
           disabled={loading}
         >
           User Login
@@ -163,7 +131,7 @@ const LoginPage = ({
         <Button
           variant="outline"
           className="bg-transparent border-slate-600 hover:bg-slate-800 hover:text-white hover:border-white rounded-full px-6 py-2 font-medium transition-all duration-200 group"
-          onClick={() => defaultTestLogin("admin")}
+          onClick={() => handleTestLogin("admin")}
           disabled={loading}
         >
           Admin Login
@@ -175,7 +143,7 @@ const LoginPage = ({
         Don&apos;t have any account?{" "}
         <button
           type="button"
-          onClick={toggle}
+          onClick={handleToggle}
           className="text-slate-800 underline cursor-pointer font-semibold"
         >
           Register
@@ -183,6 +151,4 @@ const LoginPage = ({
       </p>
     </div>
   );
-};
-
-export default LoginPage;
+}

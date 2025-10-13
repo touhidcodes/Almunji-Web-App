@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FieldValues } from "react-hook-form";
 import FormContainer from "@/components/Forms/FormContainer";
 import FormInput from "@/components/Forms/FormInput";
 import Link from "next/link";
@@ -16,13 +15,16 @@ import { userLogin } from "@/services/actions/userLogin";
 import { toast } from "sonner";
 import { userRegister } from "@/services/actions/userRegister";
 
+// Infer the type from your validation schema
+type RegisterFormData = z.infer<typeof registerValidationSchema>;
+
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const router = useRouter();
 
-  const handleLogin = async (values: FieldValues) => {
+  const handleLogin = async (values: RegisterFormData) => {
     try {
       setLoading(true);
       setError("");
@@ -41,7 +43,7 @@ const RegisterPage = () => {
     }
   };
 
-  const handleRegister = async (data: FieldValues) => {
+  const handleRegister = async (data: RegisterFormData) => {
     try {
       setLoading(true);
       setError("");
@@ -66,6 +68,10 @@ const RegisterPage = () => {
     }
   };
 
+  const handleToggle = () => {
+    router.push("/login");
+  };
+
   return (
     <div className="w-full max-w-sm space-y-5">
       <div className="text-left">
@@ -85,13 +91,12 @@ const RegisterPage = () => {
         </div>
       )}
 
-      <FormContainer
+      <FormContainer<RegisterFormData>
         onSubmit={handleRegister}
         resolver={zodResolver(registerValidationSchema)}
         defaultValues={{
           username: "",
           email: "",
-          role: "",
           password: "",
         }}
       >
@@ -182,6 +187,7 @@ const RegisterPage = () => {
         Already have an account?{" "}
         <button
           type="button"
+          onClick={handleToggle}
           className="text-slate-800 underline cursor-pointer font-semibold"
         >
           Sign In
