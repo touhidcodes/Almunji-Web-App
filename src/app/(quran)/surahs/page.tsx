@@ -7,7 +7,7 @@ import { TChapterData } from "@/types/surah";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Shared/Navbar/Navbar";
 
-const SurahPage = () => {
+const SurahsPage = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterPlace, setFilterPlace] = useState<string>("all");
@@ -31,7 +31,7 @@ const SurahPage = () => {
     : [];
 
   const handleSurahClick = (index: number) => {
-    router.push(`/surah/${index + 1}`);
+    router.push(`/surahs/${index + 1}`);
   };
 
   const clearFilters = () => {
@@ -280,4 +280,4 @@ const SurahPage = () => {
   );
 };
 
-export default SurahPage;
+export default SurahsPage;

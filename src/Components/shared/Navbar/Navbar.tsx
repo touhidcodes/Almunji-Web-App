@@ -25,10 +25,11 @@ const Navbar = () => {
 
   const navigationLinks = [
     { href: "/", label: "Home" },
+    { href: "/surahs", label: "Quran" },
+    { href: "/dictionary", label: "Dictionary" },
     { href: "/about", label: "About us" },
-    { href: "/reciters", label: "Reciters" },
-    { href: "/blog", label: "Blog" },
-    { href: "/contact", label: "Contact" },
+    // { href: "/blog", label: "Blog" },
+    // { href: "/contact", label: "Contact" },
   ];
 
   return (

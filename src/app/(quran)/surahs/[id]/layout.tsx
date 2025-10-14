@@ -63,7 +63,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
   const { data: chaptersData = [], isLoading } = useGetChaptersQuery({});
 
   // Get current surah info from pathname
-  const currentSurahId = pathname.startsWith("/surah/")
+  const currentSurahId = pathname.startsWith("/surahs/")
     ? parseInt(pathname.split("/")[2])
     : null;
   const currentSurah = chaptersData?.find((s: any) => s.id === currentSurahId);
@@ -150,7 +150,7 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
 
     const newSurahId = currentSurahId + direction;
     if (newSurahId >= 1 && newSurahId <= 114) {
-      router.push(`/surah/${newSurahId}`);
+      router.push(`/surahs/${newSurahId}`);
     }
   };
 

@@ -10,6 +10,7 @@ import {
 } from "@/redux/api/userApi";
 import SideBar from "../SideBar/SideBar";
 import clsx from "clsx";
+import AuthButton from "@/components/Shared/AuthButton/AuthButton";
 
 const drawerWidth = 300;
 
