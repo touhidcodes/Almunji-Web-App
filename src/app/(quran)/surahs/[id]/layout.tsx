@@ -189,7 +189,29 @@ const SurahLayout: React.FC<SurahLayoutProps> = ({ children }) => {
                   <Menu className="h-5 w-5" />
                 )}
               </Button>
-
+              {/* Nav Links - Show only on large devices */}
+              <nav className="hidden lg:flex items-center gap-4 mr-2">
+                <button
+                  onClick={() => router.push("/")}
+                  className={cn(
+                    "text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors",
+                    pathname === "/" &&
+                      "text-teal-600 dark:text-teal-400 font-semibold"
+                  )}
+                >
+                  Home
+                </button>
+                <button
+                  onClick={() => router.push("/dictionary")}
+                  className={cn(
+                    "text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors",
+                    pathname.startsWith("/dictionary") &&
+                      "text-teal-600 dark:text-teal-400 font-semibold"
+                  )}
+                >
+                  Dictionary
+                </button>
+              </nav>
               {/* Current Surah Info */}
               {currentSurah && (
                 <div className="flex items-center gap-3">
