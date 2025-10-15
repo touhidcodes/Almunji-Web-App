@@ -17,35 +17,7 @@ export const quranApi = baseQuranApi.injectEndpoints({
       }),
       providesTags: [tagTypes.quran],
     }),
-    getAllQuranVerse: build.query({
-      query: (chapter) => ({
-        url: `/ara-qurandoorinonun/${chapter}.json`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.quran],
-    }),
-
-    getSurahByChapter: build.query({
-      query: (chapter) => ({
-        url: `/ara-qurandoorinonun/${chapter}.json`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.quran],
-    }),
-    getSurahBengaliByChapter: build.query({
-      query: (chapter) => ({
-        url: `/ben-muhiuddinkhan/${chapter}.json`,
-        method: "GET",
-      }),
-      providesTags: [tagTypes.quran],
-    }),
   }),
 });
 
-export const {
-  useGetChaptersQuery,
-  useGetChapterVersesQuery,
-  useGetAllQuranVerseQuery,
-  useGetSurahByChapterQuery,
-  useGetSurahBengaliByChapterQuery,
-} = quranApi;
+export const { useGetChaptersQuery, useGetChapterVersesQuery } = quranApi;
