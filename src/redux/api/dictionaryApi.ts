@@ -27,13 +27,13 @@ export const dictionaryApi = baseServerApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: [tagTypes.dictionary],
-      // Handle undefined or null responses
-      transformResponse: (response: any) => {
-        if (!response || response === undefined) {
-          return { data: null };
-        }
-        return response;
-      },
+      // // Handle undefined or null responses
+      // transformResponse: (response: any) => {
+      //   if (!response || response === undefined) {
+      //     return { data: null };
+      //   }
+      //   return response;
+      // },
     }),
   }),
 });
