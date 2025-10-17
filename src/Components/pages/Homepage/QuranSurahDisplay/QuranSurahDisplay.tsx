@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const QuranSurahDisplay = () => {
+  const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("Surah");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("Ascending");
@@ -47,7 +49,6 @@ const QuranSurahDisplay = () => {
       arabicName: "المائدة",
       englishName: "The Table Spread",
       verses: 120,
-      featured: true,
     },
     {
       id: 6,
@@ -122,6 +123,14 @@ const QuranSurahDisplay = () => {
     }
   });
 
+  // Navigation handlers
+  const handleSurahClick = (surahId: number) => {
+    router.push(`/surahs/${surahId}`);
+  };
+
+  const handleShowAllClick = () => {
+    router.push("/surahs");
+  };
   return (
     <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
       {/* Header */}
@@ -140,7 +149,7 @@ const QuranSurahDisplay = () => {
               onClick={() => setSelectedTab(tab)}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                 selectedTab === tab
-                  ? "bg-yellow-400 text-gray-800"
+                  ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-600 text-white"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -181,9 +190,9 @@ const QuranSurahDisplay = () => {
         {sortedSurahs.map((surah) => (
           <div
             key={surah.id}
-            className={`relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border ${
-              surah.featured ? "border-teal-500 bg-teal-50" : "border-gray-200"
-            }`}
+            onClick={() => handleSurahClick(surah.id)}
+            className={`relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-teal-500 bg-teal-50" : "border-gray-200
+            `}
           >
             {/* Surah Number */}
             <div className="flex justify-between items-start mb-3">
@@ -208,27 +217,23 @@ const QuranSurahDisplay = () => {
               </p>
               <p className="text-sm text-gray-600">{surah.englishName}</p>
             </div>
-
-            {/* Featured badge */}
-            {surah.featured && (
-              <div className="absolute top-4 right-4">
-                <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
-              </div>
-            )}
           </div>
         ))}
       </div>
 
       {/* Show All Button */}
       <div className="text-center">
-        <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-semibold px-8 py-3 rounded-full transition-colors">
+        <button
+          onClick={handleShowAllClick}
+          className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-600 text-white font-semibold px-8 py-3 rounded-full transition-colors"
+        >
           Show All Surah
         </button>
       </div>
 
       <style jsx>{`
         .font-arabic {
-          font-family: "Amiri", "Times New Roman", serif;
+          font-family: "Amiri", "Scheherazade New", "Times New Roman", serif;
         }
       `}</style>
     </div>
