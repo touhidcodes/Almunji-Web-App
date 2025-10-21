@@ -5,7 +5,6 @@ export const dictionaryApi = baseServerApi.injectEndpoints({
   endpoints: (build) => ({
     getDictionarySuggestions: build.query({
       query: (debouncedSearchTerm) => {
-        // Properly encode the search term for Persian/Arabic characters
         const encodedWord = encodeURIComponent(debouncedSearchTerm);
         return {
           url: `/dictionary/suggestion?searchTerm=${encodedWord}`,
@@ -13,7 +12,6 @@ export const dictionaryApi = baseServerApi.injectEndpoints({
         };
       },
       providesTags: [tagTypes.dictionary],
-      // Handle undefined or null responses
       transformResponse: (response: any) => {
         if (!response || response === undefined) {
           return { data: [] };
@@ -27,13 +25,6 @@ export const dictionaryApi = baseServerApi.injectEndpoints({
         method: "GET",
       }),
       providesTags: [tagTypes.dictionary],
-      // // Handle undefined or null responses
-      // transformResponse: (response: any) => {
-      //   if (!response || response === undefined) {
-      //     return { data: null };
-      //   }
-      //   return response;
-      // },
     }),
   }),
 });
