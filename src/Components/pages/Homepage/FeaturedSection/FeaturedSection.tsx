@@ -10,13 +10,10 @@ import {
   GraduationCap,
   Crown,
   Shield,
-  Heart,
   MessageCircle,
-  Play,
   ArrowRight,
   MapPin,
   Calendar,
-  Sparkles,
   Trophy,
   Languages,
 } from "lucide-react";

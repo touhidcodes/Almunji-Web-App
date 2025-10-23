@@ -11,13 +11,11 @@ const labelMap: Record<string, string> = {
   dashboard: "Dashboard",
   "all-user": "All Users",
   "my-profile": "My Profile",
-  // Add other mappings as needed
 };
 
 export default function DynamicBreadcrumb() {
   const pathname = usePathname();
 
-  // Split, filter empty segments and remove "user" / "admin"
   const pathSegments = pathname
     .split("/")
     .filter((segment) => segment && segment !== "user" && segment !== "admin");
@@ -31,7 +29,6 @@ export default function DynamicBreadcrumb() {
 
   return (
     <Breadcrumb className="flex items-center space-x-1 text-white text-sm lg:text-md list-none">
-      {/* Home is the only clickable link */}
       <BreadcrumbLink
         href="/"
         className="text-white no-underline hover:text-white"
