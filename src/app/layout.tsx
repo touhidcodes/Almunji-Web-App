@@ -4,8 +4,8 @@ import { Toaster } from "sonner";
 import Providers from "@/providers/providers";
 
 export const metadata: Metadata = {
-  title: "Almunji Web App",
-  description: "Almunji Web App",
+  title: "Almunji — Read, Listen & Reflect on the Quran",
+  description: "A calm, thoughtful space to read, listen to, and understand the Holy Quran.",
 };
 
 export default function RootLayout({
