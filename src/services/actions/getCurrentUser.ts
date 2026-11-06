@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
-type DecodedUser = JwtPayload & { role?: string };
+type DecodedUser = JwtPayload & { role?: string; permissions?: any[] };
 
 export const getCurrentUser = async (): Promise<DecodedUser | null> => {
   const cookieStore = await cookies();
@@ -13,7 +13,24 @@ export const getCurrentUser = async (): Promise<DecodedUser | null> => {
 
   try {
     const decoded = jwtDecode<DecodedUser>(token);
-    return { ...decoded, role: decoded.role || "" };
+    
+    // If permissions are in the token, use those
+    if (decoded.permissions) {
+      return { ...decoded, role: decoded.role || "" };
+    }
+    
+    // Otherwise try to get permissions from cookie
+    const permissionsCookie = cookieStore.get("permissions")?.value;
+    if (permissionsCookie) {
+      try {
+        const permissions = JSON.parse(permissionsCookie);
+        return { ...decoded, role: decoded.role || "", permissions };
+      } catch (err) {
+        console.error("Failed to parse permissions cookie:", err);
+      }
+    }
+    
+    return { ...decoded, role: decoded.role || "", permissions: [] };
   } catch (err) {
     console.error("Failed to decode server token:", err);
     return null;

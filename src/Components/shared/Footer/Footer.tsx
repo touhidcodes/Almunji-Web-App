@@ -11,7 +11,7 @@ const Footer = () => {
           <div className="md:col-span-1">
             <div className="flex items-center mb-4">
               <div className="w-8 h-8 bg-teal-600 rounded mr-2"></div>
-              <span className="text-xl font-bold text-gray-900">QuranHub</span>
+              <span className="text-xl font-bold text-gray-900">Almunji</span>
             </div>
             <p className="text-gray-600 mb-6 text-sm leading-relaxed">
               Where you can embark on a transformative journey through the

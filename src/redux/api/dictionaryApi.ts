@@ -1,30 +1,35 @@
-import { tagTypes } from "../tags";
-import { baseServerApi } from "./baseApi";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-export const dictionaryApi = baseServerApi.injectEndpoints({
+const dictionaryApiBaseUrl =
+  process.env.NEXT_PUBLIC_DICTIONARY_API_URL ||
+  "http://localhost:5000/api/v1/dictionary";
+
+type DictionaryResponse<T> = { data: T };
+
+export const dictionaryApi = createApi({
+  reducerPath: "dictionaryApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: dictionaryApiBaseUrl,
+    credentials: "include",
+  }),
+  tagTypes: ["Dictionary"],
   endpoints: (build) => ({
-    getDictionarySuggestions: build.query({
-      query: (debouncedSearchTerm) => {
-        const encodedWord = encodeURIComponent(debouncedSearchTerm);
-        return {
-          url: `/dictionary/suggestion?searchTerm=${encodedWord}`,
-          method: "GET",
-        };
-      },
-      providesTags: [tagTypes.dictionary],
-      transformResponse: (response: any) => {
-        if (!response || response === undefined) {
-          return { data: [] };
-        }
-        return response;
-      },
+    getDictionarySuggestions: build.query<DictionaryResponse<any[]>, string>({
+      query: (searchTerm) => ({
+        url: "/suggestion",
+        method: "GET",
+        params: { searchTerm },
+      }),
+      transformResponse: (response: DictionaryResponse<any[]> | any[]) =>
+        Array.isArray(response) ? { data: response } : response,
+      providesTags: ["Dictionary"],
     }),
-    getDictionaryWord: build.query({
+    getDictionaryWord: build.query<DictionaryResponse<any>, string>({
       query: (id) => ({
-        url: `/dictionary/${id}`,
+        url: `/${encodeURIComponent(id)}`,
         method: "GET",
       }),
-      providesTags: [tagTypes.dictionary],
+      providesTags: ["Dictionary"],
     }),
   }),
 });

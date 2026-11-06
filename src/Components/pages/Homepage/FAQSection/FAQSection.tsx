@@ -10,6 +10,9 @@ import {
   Shield,
   Smartphone,
   Users,
+  Download,
+  MessageCircle,
+  Calendar,
 } from "lucide-react";
 
 interface FAQItem {
@@ -82,6 +85,83 @@ const faqData: FAQItem[] = [
     answer:
       "Yes, Almunji is 100% free and always will be. We believe the Word of Allah should be accessible to everyone without barriers. We're funded entirely through voluntary donations from our generous community. There are no ads, no subscriptions, and no hidden costs. If Almunji benefits you, consider supporting us to help others access the Quran.",
     icon: <Users className="w-5 h-5" />,
+  },
+  {
+    category: "Getting Started",
+    question: "How do I start using Almunji as a beginner?",
+    answer:
+      "We've designed Almunji for all levels of learners. Start with our 'Beginner's Guide' feature which introduces you to the basics of Quranic reading, basic Arabic terms, and how to navigate the app. You can also explore our 'Juz Amma' section which contains the 30th Juz - perfect for beginners.",
+    icon: <BookOpen className="w-5 h-5" />,
+  },
+  {
+    category: "Features",
+    question: "What makes Almunji different from other Quran apps?",
+    answer:
+      "Almunji stands out with our unique combination of features: authentic Uthmani script with color-coded tajweed rules, word-by-word translations with Arabic grammar breakdown, multiple translation options with toggle switches, advanced search with topic-based filtering, personalized reading plans with progress tracking, and audio synchronization with highlighting. Our commitment to authenticity and user experience is unmatched.",
+    icon: <Star className="w-5 h-5" />,
+  },
+  {
+    category: "Features",
+    question: "Can I download specific translations for offline use?",
+    answer:
+      "Absolutely! Our download manager lets you choose exactly what to download for offline use. You can download individual translations, audio recitations, or tafsir separately to save storage space. Once downloaded, you can access them without internet connection. Your downloads are organized by category for easy management.",
+    icon: <Download className="w-5 h-5" />,
+  },
+  {
+    category: "Learning Tools",
+    question: "Does Almunji offer tajweed rules and guidance?",
+    answer:
+      "Yes! Our comprehensive tajweed section includes: color-coded Arabic text following standard tajweed rules, interactive tutorials for each tajweed rule with audio examples, practice exercises with instant feedback, audio comparisons of correct vs incorrect pronunciation, and progress tracking for your tajweed journey. Many students use our app as their primary tajweed learning tool.",
+    icon: <Volume2 className="w-5 h-5" />,
+  },
+  {
+    category: "Account & Personalization",
+    question: "Can I create multiple reading plans?",
+    answer:
+      "Yes, you can create and manage multiple reading plans simultaneously. Whether you want to read the entire Quran, focus on specific Surahs, or follow a daily verses plan, our flexible system lets you organize your goals. You can track progress for each plan separately, set reminders, and receive motivational notifications to keep you on track.",
+    icon: <BookOpen className="w-5 h-5" />,
+  },
+  {
+    category: "Mobile & Offline",
+    question: "Does Almunji work on both iOS and Android?",
+    answer:
+      "Yes! Our mobile apps are available on both iOS and Android platforms. Both apps offer identical features and synced data, so you can switch between devices seamlessly. The apps are optimized for each platform's design guidelines and include native features like_widgets, push notifications, and device-specific gestures.",
+    icon: <Smartphone className="w-5 h-5" />,
+  },
+  {
+    category: "Trust & Authenticity",
+    question: "How often do you update your content?",
+    answer:
+      "We review and update our content regularly based on user feedback and scholarly recommendations. Major updates are released quarterly and always undergo rigorous scholarly review. Minor corrections and improvements are made as needed, and all updates are clearly documented in our changelog. You'll always have access to the most accurate and reliable Islamic content.",
+    icon: <Shield className="w-5 h-5" />,
+  },
+  {
+    category: "Family & Shared Access",
+    question: "Can multiple family members share one subscription?",
+    answer:
+      "While Almunji is completely free for everyone, we also offer a Family Plan that allows up to 6 family members to share one account. Each member gets their own profile with personalized settings, reading history, and bookmarks. The Family Plan includes shared collections and the ability to track progress for the entire family. Perfect for learning together!",
+    icon: <Users className="w-5 h-5" />,
+  },
+  {
+    category: "Support & Feedback",
+    question: "How do I report an error or suggest improvements?",
+    answer:
+      "We welcome your feedback! Use our built-in feedback feature in the settings menu to report errors, suggest improvements, or share your thoughts. Our dedicated team reviews all submissions daily. For urgent issues, contact our support team directly through the help center. We value your input and use it to continuously improve Almunji for the entire community.",
+    icon: <MessageCircle className="w-5 h-5" />,
+  },
+  {
+    category: "Prayer & Worship",
+    question: "Does Almunji include prayer times and Qibla finder?",
+    answer:
+      "Yes! Our comprehensive worship tools include accurate prayer times calculated for your exact location, Qibla finder with compass and map navigation, daily Adhan notifications with customizable settings, and a prayer tracker to monitor your consistency. All tools work offline and are calibrated according to major calculation methods (Umm al-Qura, MWL, ISNA, etc.).",
+    icon: <Calendar className="w-5 h-5" />,
+  },
+  {
+    category: "Knowledge Expansion",
+    question: "What other Islamic resources are available?",
+    answer:
+      "Beyond the Quran, Almunji offers a rich library of Islamic knowledge: 10,000+ authentic Hadith with multiple narration sources, comprehensive Tafsir from renowned scholars like Ibn Kathir and At-Tabari, Seerah and Islamic history content,Fiqh and Shariah guidance, and Dua collections for all occasions. Our resources are carefully curated andScholarly reviewed.",
+    icon: <Globe className="w-5 h-5" />,
   },
 ];
 

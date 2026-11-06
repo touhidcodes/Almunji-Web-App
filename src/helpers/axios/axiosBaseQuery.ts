@@ -21,7 +21,7 @@ export const axiosBaseQuery =
   > =>
   async ({ url, method = "GET", data, params, headers, contentType }) => {
     const config = {
-      url: baseUrl + url,
+      url: /^https?:\/\//i.test(url) ? url : baseUrl + url,
       method,
       data,
       params,

@@ -2,6 +2,7 @@
 
 import { FieldValues } from "react-hook-form";
 import setAccessToken from "./setAccessToken";
+import { setPermissionsCookie } from "./setPermissionsCookie";
 import { toast } from "sonner";
 
 export const userLogin = async (data: FieldValues) => {
@@ -18,12 +19,19 @@ export const userLogin = async (data: FieldValues) => {
 
   if (userInfo.success === false) {
     toast.error(userInfo.message);
+    return userInfo;
   }
 
   if (userInfo.data.token) {
     // setToLocalStorage(authKey, userInfo.data.token);
     setAccessToken(userInfo.data.token);
+    
+    // Store permissions if available (from backend response)
+    if (userInfo.data.permissions) {
+      setPermissionsCookie(userInfo.data.permissions);
+    }
   }
 
+  toast.success(userInfo.message);
   return userInfo;
 };

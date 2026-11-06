@@ -104,46 +104,47 @@ export default function Sidebar({ isCollapsed, onClose }: SidebarProps) {
 
         {/* Scrollable Nav */}
         <div className="flex-1 overflow-y-auto">
-          {getSidebarLinks((user?.role as "ADMIN" | "USER") || "USER").map(
-            (group, idx) => (
-              <div key={idx} className="mb-2">
-                {/* Section Title - only show when sidebar is expanded */}
-                {!isCollapsed && group.section !== "Main" && (
-                  <div className="px-6 py-1 text-xs text-muted-foreground uppercase">
-                    {group.section}
-                  </div>
-                )}
+          {getSidebarLinks(
+            (user?.role as "ADMIN" | "USER" | "MODERATOR") || "USER",
+            user?.permissions || []
+          ).map((group: any, idx: number) => (
+            <div key={idx} className="mb-2">
+              {/* Section Title - only show when sidebar is expanded */}
+              {!isCollapsed && group.section !== "Main" && (
+                <div className="px-6 py-1 text-xs text-muted-foreground uppercase">
+                  {group.section}
+                </div>
+              )}
 
-                {/* Divider when collapsed */}
-                {isCollapsed && idx !== 0 && (
-                  <div className="h-px bg-gray-400 mx-4 my-2" />
-                )}
+              {/* Divider when collapsed */}
+              {isCollapsed && idx !== 0 && (
+                <div className="h-px bg-gray-400 mx-4 my-2" />
+              )}
 
-                {/* Nav Items */}
-                <nav className="flex flex-col gap-0.5">
-                  {group.items.map((item, i) => (
-                    <Link
-                      key={i}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-2 text-sm font-medium hover:bg-muted transition",
-                        pathname === item.href &&
-                          "bg-secondary text-secondary-foreground",
-                        isCollapsed && "justify-center px-0"
-                      )}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {!isCollapsed && (
-                        <span className="transition-opacity duration-200">
-                          {item.label}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-            )
-          )}
+              {/* Nav Items */}
+              <nav className="flex flex-col gap-0.5">
+                {group.items.map((item: any, i: number) => (
+                  <Link
+                    key={i}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 text-sm font-medium hover:bg-muted transition",
+                      pathname === item.href &&
+                        "bg-secondary text-secondary-foreground",
+                      isCollapsed && "justify-center px-0"
+                    )}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    {!isCollapsed && (
+                      <span className="transition-opacity duration-200">
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          ))}
         </div>
 
         {/* Footer */}
